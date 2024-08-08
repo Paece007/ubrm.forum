@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory
+from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -9,6 +9,7 @@ from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 import os
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 load_dotenv()
 
@@ -61,8 +62,28 @@ class LoginForm(FlaskForm):
 
 
 class UploadFileForm(FlaskForm):
-    file = FileField(validators=[FileRequired()])
+    file = FileField('File', validators=[FileRequired()])
     submit = SubmitField('Upload')
+
+class Upload(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    lv = db.Column(db.String(255), nullable=False)
+    uploaded_by = db.Column(db.String(255), nullable=False)
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+    likes = db.Column(db.Integer, default=0)
+
+    def __repr__(self):
+        return f'<Upload {self.filename}>'
+    
+
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    upload_id = db.Column(db.Integer, db.ForeignKey('upload.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Like {self.upload_id} by {self.user_id}>'
 
     
 
@@ -157,6 +178,62 @@ def dashboard():
 @login_required
 def protected():
     return 'Logged in as: ' + str(current_user.id)
+
+@app.route('/lvs')
+@login_required
+def lvs():
+    lvs = os.listdir(app.config['UPLOAD_FOLDER'])
+    return render_template('lvs.html', lvs=lvs)
+
+
+@app.route('/lv/<lv>', methods=['GET', 'POST'])
+@login_required
+def lv_detail(lv):
+    lv_folder = os.path.join(app.config['UPLOAD_FOLDER'], lv)
+    if not os.path.exists(lv_folder):
+        abort(404)
+
+    form = UploadFileForm()
+    if form.validate_on_submit():
+        f = form.file.data
+        filename = secure_filename(f.filename)
+        f.save(os.path.join(lv_folder, filename))
+
+        # Save upload information to the database
+        upload = Upload(
+            filename=filename,
+            lv=lv,
+            uploaded_by=current_user.username,
+        )
+        db.session.add(upload)
+        db.session.commit()
+
+        flash('File uploaded successfully.', 'success')
+        return redirect(url_for('lv_detail', lv=lv))
+
+    uploads = Upload.query.filter_by(lv=lv).all()
+    return render_template('lv_detail.html', lv=lv, uploads=uploads, form=form)
+
+
+
+@app.route('/like/<int:upload_id>', methods=['POST'])
+@login_required
+def like_upload(upload_id):
+    upload = Upload.query.get_or_404(upload_id)
+    if not has_user_liked(upload_id, current_user.id):
+        upload.likes += 1
+        db.session.commit()
+        # Save the like to the database
+        like = Like(upload_id=upload_id, user_id=current_user.id)
+        db.session.add(like)
+        db.session.commit()
+        return jsonify(success=True, likes=upload.likes)
+    else:
+        return jsonify(success=False, message='You have already liked this upload.')
+    
+
+def has_user_liked(upload_id, user_id):
+    return Like.query.filter_by(upload_id=upload_id, user_id=user_id).first() is not None
 
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required

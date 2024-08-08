@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block title %}Lehrveranstaltungen{% endblock %}
+{% block content %}
+
+    <h2>{{ lv }} Uploads</h2>
+    <ul>
+        {% for upload in uploads %}
+            <li>
+                <a href="{{ url_for('download_file', lv=lv, filename=upload.filename) }}">{{ upload.filename }}</a>
+                <p>Uploaded by: {{ upload.uploaded_by }} on {{ upload.upload_date }}</p>
+                <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span></p>
+                <button onclick="likeUpload({{ upload.id }})">Like</button>
+            </li>
+        {% endfor %}
+    </ul>
+    <h2>Upload a new file</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ form.file.label }} {{ form.file() }}
+        {{ form.submit() }}
+    </form>
+
+    <script>
+    function likeUpload(uploadId) {
+        fetch(`/like/${uploadId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ form.csrf_token._value() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`likes-${uploadId}`).innerText = data.likes;
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+    </script>
+
+{% endblock %}

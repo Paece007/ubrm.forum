@@ -1,14 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask App</title>
-</head>
-<body>
-    <h1>Welcome to the Flask App!</h1>
+{% extends "layout.html" %}
+
+{% block title %}Index{% endblock %}
+
+{% block content %}
+    <h1>Index: Welcome to the Flask App!</h1>
     {% if current_user.is_authenticated %}
-        Hi {{ current_user.name }}!
-    {% endif %} 
-</body>
-</html>
+        <p>Hi {{ current_user.name }}!</p>
+    {% else %}
+        <p>Please <a href="{{ url_for('login') }}">login</a> to access more features.</p>
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a> now!</p>
+    {% endif %}
+{% endblock %}

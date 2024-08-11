@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify
+from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -144,12 +144,19 @@ def download_file(filename):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user)
-            return redirect(url_for('dashboard'))
+            next_page = request.args.get('next')
+            if next_page and next_page != url_for('logout'):
+                return redirect(next_page)
+            else:
+                return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password.', 'danger')
     return render_template('login.html', form=form)
@@ -239,7 +246,7 @@ def has_user_liked(upload_id, user_id):
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('logout'))
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':

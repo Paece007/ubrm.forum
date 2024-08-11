@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Flask App{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>{% block title %}Forum{% endblock %}</title>
+    <link rel="stylesheet" href="static/CSS/css/pico.classless.jade.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
@@ -12,6 +12,8 @@
         <nav>
             <ul>
                 <li><a href="{{ url_for('index') }}">Home</a></li>
+            </ul>
+            <ul>
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('protected') }}">Protected</a></li>
                     <li><a href="{{ url_for('download') }}">Download</a></li>
@@ -25,6 +27,9 @@
         </nav>
     </header>
     <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
         <button id="confettiButton">Celebrate!</button>
         <button id="growTreeButton">Grow a Tree!</button>
         <!-- Add the confetti script -->
@@ -38,11 +43,6 @@
         });
     </script>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
         .tree {
             position: absolute;
             bottom: 0;
@@ -76,10 +76,7 @@
             document.body.appendChild(tree);
         });
     </script>
-        {% block content %}{% endblock %}
-    </main>
-    <footer>
-        <p>&copy; 2023 Flask App</p>
+        <p>&copy; 2024  Philipp Wiederkehr</p>
     </footer>
 </body>
 </html>

@@ -7,8 +7,8 @@
 
     <form method="POST" action="">
         {{ form.hidden_tag() }}
-        {{ form.username }}
-        {{ form.password }}
+        {{ form.username (type=text, autofocus=True) }}
+        {{ form.password (type="password")}}
         {{ form.submit }}
     </form>
 

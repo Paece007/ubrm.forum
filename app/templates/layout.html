@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Forum{% endblock %}</title>
-    <link rel="stylesheet" href="static/CSS/css/pico.classless.jade.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/css/pico.classless.jade.min.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>

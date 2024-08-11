@@ -1,12 +1,12 @@
 {% extends "layout.html" %}
-{% block title %}Lehrveranstaltungen{% endblock %}
+{% block title %}{{ lehrveranstaltung.name }}{% endblock %}
 {% block content %}
 
-    <h2>{{ lv }} Uploads</h2>
+    <h2>{{ lehrveranstaltung.name }} Uploads</h2>
     <ul>
         {% for upload in uploads %}
             <li>
-                <a href="{{ url_for('download_file', lv=lv, filename=upload.filename) }}">{{ upload.filename }}</a>
+                <a href="{{ url_for('download_file', lehrveranstaltung_id=lehrveranstaltung.id, filename=upload.filename) }}">{{ upload.filename }}</a>
                 <p>Uploaded by: {{ upload.uploaded_by }} on {{ upload.upload_date }}</p>
                 <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span></p>
                 <button onclick="likeUpload({{ upload.id }})">Like</button>

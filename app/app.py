@@ -10,6 +10,7 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from config import Config
+from urllib.parse import unquote
 
 print("Configuration imported. (App)")
 
@@ -93,23 +94,35 @@ def download():
         abort(500)
 
 
-@app.route('/download/<filename>')
+@app.route('/download/<lehrveranstaltung_id>/<filename>')
 @login_required
-def download_file(filename):
-    try:
-        # Ensure the upload folder exists
-        if not os.path.exists(app.config['UPLOAD_FOLDER']):
-            print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' does not exist.")
-            abort(500)
-        
-        # Secure the filename
-        filename = secure_filename(filename)
-        
-        # Send the file from the upload folder
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    except Exception as e:
-        print(f"Error: {e}")
-        abort(500)
+def download_file(lehrveranstaltung_id, filename):
+    
+    print("Download request received")
+
+    print("Lehrveranstaltung ID: ", lehrveranstaltung_id)
+    print("Filename: ", filename)
+
+    # Define the directory where files are stored
+    upload_directory = os.path.join(app.root_path, 'static', 'files', str(lehrveranstaltung_id))
+    
+    print("Upload directory: ", upload_directory)
+    # Ensure the filename is not None
+    if filename is None:
+        print("Error: Filename is None.")
+        abort(404)
+    
+    # Construct the full file path
+    file_path = os.path.join(upload_directory, filename)
+    
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        print("Error: File does not exist.")
+        abort(404)
+    
+    print("File path: ", file_path)
+    # Send the file to the client
+    return send_from_directory(upload_directory, filename)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -159,35 +172,56 @@ def protected():
 @login_required
 def lehrveranstaltungen():
     lehrveranstaltungen = Lehrveranstaltung.query.all()
+
+    print(lehrveranstaltungen[1].encoded_name)
+
     return render_template('lehrveranstaltungen.html', lehrveranstaltungen=lehrveranstaltungen)
 
-@app.route('/lv/<lv>', methods=['GET', 'POST'])
+@app.route('/lehrveranstaltungen/<encoded_name>', methods=['GET', 'POST'])
 @login_required
-def lv_detail(lv):
-    lv_folder = os.path.join(app.config['UPLOAD_FOLDER'], lv)
+def lv_detail(encoded_name):
+    print("Encoded name: ?", encoded_name)
+    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(encoded_name)).first()
+    print(lehrveranstaltung.name)
+    print(lehrveranstaltung.id)
+
+    lv_folder = os.path.join(app.config['UPLOAD_FOLDER'],str(lehrveranstaltung.id))
     if not os.path.exists(lv_folder):
+        print("Error: Lehrveranstaltung folder does not exist.")
         abort(404)
 
     form = UploadFileForm()
+    lehrveranstaltung_id = Lehrveranstaltung.query.filter_by(name=lehrveranstaltung.name).first().id
+    form.Lehrveranstaltung_id.data = lehrveranstaltung_id
+    form.uploaded_by.data = current_user.username
+    form.upload_date.data = datetime.now()
     if form.validate_on_submit():
+        print("Form validated successfully.")
         f = form.file.data
         filename = secure_filename(f.filename)
-        f.save(os.path.join(lv_folder, filename))
+        file_path = f.save(os.path.join(lv_folder, filename))
+        print(f"File saved to {file_path}")
 
         # Save upload information to the database
         upload = Upload(
             filename=filename,
-            lv=lv,
-            uploaded_by=current_user.username,
+            Lehrveranstaltung_id=lehrveranstaltung_id,
+            uploaded_by=current_user.id,
+            upload_date=datetime.now()
         )
         db.session.add(upload)
         db.session.commit()
+        print("Upload saved to the database.")
 
         flash('File uploaded successfully.', 'success')
-        return redirect(url_for('lv_detail', lv=lv))
+        return redirect(url_for('lv_detail', encoded_name=lehrveranstaltung.encode_name))
+    else:
+        print("Form validation failed.")
+        print(form.errors)  # Print form errors to debug
 
-    uploads = Upload.query.filter_by(lv=lv).all()
-    return render_template('lv_detail.html', lv=lv, uploads=uploads, form=form)
+    uploads = Upload.query.filter_by(Lehrveranstaltung_id=lehrveranstaltung.id).all()
+    print(uploads)
+    return render_template('lv_detail.html', lehrveranstaltung=lehrveranstaltung, uploads=uploads, form=form)
 
 
 

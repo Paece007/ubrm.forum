@@ -2,9 +2,17 @@
 {% block title %}Lehrveranstaltungen{% endblock %}
 {% block content %}
     <h1>Lehrveranstaltungen</h1>
-    <ul>
+    <div class="grid">
         {% for lehrveranstaltung in lehrveranstaltungen %}
-            <li><a href="{{ url_for('lv_detail', lehrveranstaltung=lehrveranstaltung) }}">{{ lv }}</a></li>
+            <div>
+                <article>
+                    <a href="{{ url_for('lv_detail', encoded_name=lehrveranstaltung.encoded_name) }}">{{ lehrveranstaltung.name }}</a>
+                    <p>ECTS: {{ lehrveranstaltung.ects }}</p>
+                    <p>Professor: {{ lehrveranstaltung.professor }}</p>
+                    <p>Schwierigkeit:{{ lehrveranstaltung.difficulty }}</p>
+                    <p>Verwendete Zeit: {{ lehrveranstaltung.time_spent }}</p>
+                </article>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}

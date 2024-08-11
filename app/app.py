@@ -1,91 +1,60 @@
+# Import the configuration
+print("Importing configuration...(App)")
 from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from flask_wtf.file import FileField, FileRequired
-from wtforms.validators import InputRequired, Length, ValidationError
+from sqlalchemy import inspect
+from flask_login import login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from config import Config
+
+print("Configuration imported. (App)")
 
 load_dotenv()
 
-# Import the configuration
-from config import Config
+from app import create_app, login_manager, db, bcrypt
+from app.models import User, RegisterForm, LoginForm, Lehrveranstaltung, UploadFileForm, Upload, Like
 
-# Create the Flask app
-app = Flask(__name__)
-app.config.from_object(Config)
+app = create_app()
 
-# Create the SQLAlchemy object
-db = SQLAlchemy(app)
+if __name__ == '__main__':
+    app.run(debug=True)
 
-# Create the Bcrypt object
-bcrypt = Bcrypt(app)
 
-# Create the LoginManager object
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
+print("Importing models...(App)")
+try:
+    from app import models
+    print("Models imported successfully. (App)")
+except ModuleNotFoundError as e:
+    print(f"Error importing models: {e}")
+
+print("Starting database initialization...")
+with app.app_context():
+    print("Creating database tables...")
+    models.db.create_all()
+    print("Database tables created.")
+
+    # Print the database path
+    print(f"Database path: {app.config['SQLALCHEMY_DATABASE_URI']}")
+
+    # Check if tables were created
+    inspector = inspect(models.db.engine)
+    tables = inspector.get_table_names()
+    if tables:
+        print(f"Database tables created successfully: {tables}")
+    else:
+        print("No tables found in the database.")
+
 
 # Create a user loader function
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+  
 
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False)
-
-
-class RegisterForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Password"})
-    submit = SubmitField('Register')
-
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user:
-            raise ValidationError('Username already taken.')
-        
-
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Password"})
-    submit = SubmitField('Login')
-
-
-
-class UploadFileForm(FlaskForm):
-    file = FileField('File', validators=[FileRequired()])
-    submit = SubmitField('Upload')
-
-class Upload(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(255), nullable=False)
-    lv = db.Column(db.String(255), nullable=False)
-    uploaded_by = db.Column(db.String(255), nullable=False)
-    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
-    likes = db.Column(db.Integer, default=0)
-
-    def __repr__(self):
-        return f'<Upload {self.filename}>'
-    
-
-class Like(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    upload_id = db.Column(db.Integer, db.ForeignKey('upload.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return f'<Like {self.upload_id} by {self.user_id}>'
-
-    
 
 @app.route('/')
 def index():
@@ -186,12 +155,11 @@ def dashboard():
 def protected():
     return 'Logged in as: ' + str(current_user.id)
 
-@app.route('/lvs')
+@app.route('/lehrveranstaltungen')
 @login_required
-def lvs():
-    lvs = os.listdir(app.config['UPLOAD_FOLDER'])
-    return render_template('lvs.html', lvs=lvs)
-
+def lehrveranstaltungen():
+    lehrveranstaltungen = Lehrveranstaltung.query.all()
+    return render_template('lehrveranstaltungen.html', lehrveranstaltungen=lehrveranstaltungen)
 
 @app.route('/lv/<lv>', methods=['GET', 'POST'])
 @login_required
@@ -247,7 +215,3 @@ def has_user_liked(upload_id, user_id):
 def logout():
     logout_user()
     return redirect(url_for('login'))
-
-
-if __name__ == '__main__':
-    app.run(debug=True)

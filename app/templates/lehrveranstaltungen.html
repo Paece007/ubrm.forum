@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Lehrveranstaltungen{% endblock %}
+{% block content %}
+    <h1>Lehrveranstaltungen</h1>
+    <ul>
+        {% for lehrveranstaltung in lehrveranstaltungen %}
+            <li><a href="{{ url_for('lv_detail', lehrveranstaltung=lehrveranstaltung) }}">{{ lv }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

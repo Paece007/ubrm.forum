@@ -17,7 +17,7 @@
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('protected') }}">Protected</a></li>
                     <li><a href="{{ url_for('download') }}">Download</a></li>
-                    <li><a href="{{ url_for('lvs') }}">Lehrveranstaltungen</a></li>
+                    <li><a href="{{ url_for('lehrveranstaltungen') }}">Lehrveranstaltungen</a></li>
                     <li><a href="{{ url_for('upload') }}">Upload</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
                 {% else %}

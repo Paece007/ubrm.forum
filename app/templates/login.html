@@ -6,7 +6,7 @@
     <h1>Login</h1>
     <form method="POST">
         {{ form.hidden_tag() }}
-        {{ form.username }}
+        {{ form.username(autofocus=True) }}
         {{ form.password }}
         {{ form.submit }}
     </form>

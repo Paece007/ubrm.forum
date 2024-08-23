@@ -11,16 +11,18 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 from config import Config
 from urllib.parse import unquote
+from flask_wtf.csrf import CSRFProtect
+
+import logging
 
 print("Configuration imported. (App)")
 
 load_dotenv()
 
-from app import create_app, login_manager, db, bcrypt
-from app.models import User, RegisterForm, LoginForm, Lehrveranstaltung, UploadFileForm, Upload, Like
+from app import create_app, login_manager, db, bcrypt, csrf
+from app.models import User, RegisterForm, LoginForm, Lehrveranstaltung, UploadFileForm, Upload, Like, CommentForm, Comment
 
 app = create_app()
-
 if __name__ == '__main__':
     app.run(debug=True)
 
@@ -60,38 +62,6 @@ def load_user(user_id):
 @app.route('/')
 def index():
     return render_template('index.html')
-
-
-
-@app.route('/upload', methods=['GET', 'POST'])
-@login_required
-def upload():
-    form = UploadFileForm()
-    if form.validate_on_submit():
-        f = form.file.data
-        filename = secure_filename(f.filename)
-        f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        flash('File uploaded successfully.', 'success')
-        return 'File uploaded successfully.'
-
-    return render_template('upload.html', form=form)
-
-@app.route('/download')
-@login_required
-def download():
-    try:
-        # Ensure the upload folder exists
-        if not os.path.exists(app.config['UPLOAD_FOLDER']):
-            print(f"Upload folder '{app.config['UPLOAD_FOLDER']}' does not exist.")
-            abort(500)
-        
-        # List all files in the directory
-        files = os.listdir(app.config['UPLOAD_FOLDER'])
-        print(f"Files found: {files}")
-        return render_template('download.html', files=files)
-    except Exception as e:
-        print(f"Error: {e}")
-        abort(500)
 
 
 @app.route('/download/<lehrveranstaltung_id>/<filename>')
@@ -171,11 +141,9 @@ def protected():
 @app.route('/lehrveranstaltungen')
 @login_required
 def lehrveranstaltungen():
-    lehrveranstaltungen = Lehrveranstaltung.query.all()
-
-    print(lehrveranstaltungen[1].encoded_name)
-
+    lehrveranstaltungen = Lehrveranstaltung.query.order_by(Lehrveranstaltung.name).all()
     return render_template('lehrveranstaltungen.html', lehrveranstaltungen=lehrveranstaltungen)
+
 
 @app.route('/lehrveranstaltungen/<encoded_name>', methods=['GET', 'POST'])
 @login_required
@@ -191,6 +159,9 @@ def lv_detail(encoded_name):
         abort(404)
 
     form = UploadFileForm()
+    #Upload form
+
+    # Set the Lehrveranstaltung_id field to the ID of the current Lehrveranstaltung
     lehrveranstaltung_id = Lehrveranstaltung.query.filter_by(name=lehrveranstaltung.name).first().id
     form.Lehrveranstaltung_id.data = lehrveranstaltung_id
     form.uploaded_by.data = current_user.username
@@ -214,10 +185,11 @@ def lv_detail(encoded_name):
         print("Upload saved to the database.")
 
         flash('File uploaded successfully.', 'success')
-        return redirect(url_for('lv_detail', encoded_name=lehrveranstaltung.encode_name))
+        return redirect(url_for('lv_detail', encoded_name=lehrveranstaltung.encoded_name))
     else:
         print("Form validation failed.")
         print(form.errors)  # Print form errors to debug
+
 
     uploads = Upload.query.filter_by(Lehrveranstaltung_id=lehrveranstaltung.id).all()
     print(uploads)
@@ -243,6 +215,66 @@ def like_upload(upload_id):
 
 def has_user_liked(upload_id, user_id):
     return Like.query.filter_by(upload_id=upload_id, user_id=user_id).first() is not None
+
+
+@app.route('/lehrveranstaltungen/<encoded_name>/<upload_id>', methods=['GET', 'POST'])
+@login_required
+def upload_detail(encoded_name, upload_id):
+    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(encoded_name)).first()
+    upload = Upload.query.get_or_404(upload_id)
+    form = CommentForm()
+    comments = db.session.query(Comment, User.username).filter(Comment.upload_id == upload_id).join(User, Comment.user_id == User.id).all()
+    return render_template('upload_detail.html', lehrveranstaltung=lehrveranstaltung, upload=upload, comments=comments, form=form)
+
+@app.route('/comment/<upload_id>', methods=['POST'])
+@login_required
+def add_comment(upload_id):
+    data = request.get_json()
+    content = data.get('content')
+    if not content:
+        return jsonify({'success': False, 'message': 'Content is required.'}), 400
+
+    comment = Comment(
+        content=content,
+        upload_id=upload_id,
+        user_id=current_user.id,
+        upload_date=datetime.now()
+    )
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'comment': {
+            'content': comment.content,
+            'upload_date': comment.upload_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'user_id': current_user.username
+        }
+    })
+
+
+@app.route('/delete_comment/<int:comment_id>', methods=['DELETE'])
+@login_required
+@csrf.exempt  # Ensure CSRF protection is applied globally or use a token in the request
+def delete_comment(comment_id):
+    comment = Comment.query.get(comment_id)
+    if not comment:
+        logging.warning(f"Comment with id {comment_id} not found.")
+        return jsonify({'error': 'Comment not found'}), 404
+
+    if comment.user_id != current_user.id:
+        logging.warning(f"Unauthorized delete attempt by user {current_user.id} for comment {comment_id}.")
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    try:
+        db.session.delete(comment)
+        db.session.commit()
+        logging.info(f"Comment {comment_id} deleted by user {current_user.id}.")
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        logging.error(f"Error deleting comment {comment_id}: {e}")
+        db.session.rollback()
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required

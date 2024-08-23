@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+{% block title %}{{ upload.filename }}{% endblock %}
+{% block content %}
+
+    <h2>{{ upload.filename }}</h2>
+    <p>Uploaded by: {{ upload.uploaded_by }} on {{ upload.upload_date }}</p>
+    <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span> <button onclick="likeUpload({{ upload.id }})">Like</button></p>
+    <a href="{{ url_for('download_file', lehrveranstaltung_id=lehrveranstaltung.id, filename=upload.filename) }}">{{ upload.filename }}</a>
+    <ul id="comments-list">
+        {% for comment, username in comments %}
+            <li id="comment-{{ comment.id }}">
+                <details>
+                    <summary>Comment by {{ username }} on {{ comment.upload_date }}</summary>
+                    <article>
+                        <p>{{ comment.content }}</p>
+                        {% if comment.user_id == current_user.id %}
+                            <button onclick="deleteComment({{ comment.id }})">Delete</button>
+                        {% endif %}
+                    </article>
+                </details>
+            </li>
+        {% endfor %}
+    </ul>
+
+
+    <h2>Add a Comment</h2>
+    <form id="comment-form">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.content.label }}<br>
+            {{ form.content(size=32) }}
+        </div>
+        <div>
+            <button type="button" onclick="submitComment({{ upload.id }})">Submit</button>
+        </div>
+    </form>
+
+    <script>
+    function likeUpload(uploadId) {
+        fetch(`/like/${uploadId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ form.csrf_token._value() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`likes-${uploadId}`).innerText = data.likes;
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+
+    function submitComment(uploadId) {
+        const content = document.querySelector('[name="content"]').value;
+        fetch(`/comment/${uploadId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ form.csrf_token._value() }}'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const commentList = document.getElementById('comments-list');
+                const newComment = document.createElement('article');
+                
+                const contentParagraph = document.createElement('p');
+                contentParagraph.innerText = data.comment.content;
+                newComment.appendChild(contentParagraph);
+                
+                const infoParagraph = document.createElement('p');
+                infoParagraph.innerText = `Uploaded by: ${data.comment.uploaded_by} on ${data.comment.upload_date}`;
+                newComment.appendChild(infoParagraph);
+                
+                commentList.appendChild(newComment);
+                document.querySelector('[name="content"]').value = '';
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+
+    function deleteComment(commentId) {
+        // Optimistically remove the comment from the DOM
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        if (commentElement) {
+            commentElement.style.display = 'none';
+        }
+
+        fetch(`/delete_comment/${commentId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'  // Include CSRF token
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                commentElement.remove();
+            } else {
+                response.json().then(data => {
+                    alert(data.error);
+                    // Re-add the comment back to the DOM if the request fails
+                    if (commentElement) {
+                        commentElement.style.display = 'block';
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Re-add the comment back to the DOM if there's an error
+            if (commentElement) {
+                commentElement.style.display = 'block';
+            }
+        });
+    }
+    </script>
+
+{% endblock %}

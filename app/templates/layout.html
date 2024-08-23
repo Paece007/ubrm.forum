@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Forum{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/css/pico.classless.jade.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/pico/css/pico.classless.jade.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
@@ -16,9 +17,7 @@
             <ul>
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('protected') }}">Protected</a></li>
-                    <li><a href="{{ url_for('download') }}">Download</a></li>
                     <li><a href="{{ url_for('lehrveranstaltungen') }}">Lehrveranstaltungen</a></li>
-                    <li><a href="{{ url_for('upload') }}">Upload</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
                 {% else %}
                     <li><a href="{{ url_for('login') }}">Login</a></li>

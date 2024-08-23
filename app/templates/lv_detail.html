@@ -3,16 +3,17 @@
 {% block content %}
 
     <h2>{{ lehrveranstaltung.name }} Uploads</h2>
-    <ul>
+    <div>
         {% for upload in uploads %}
-            <li>
-                <a href="{{ url_for('download_file', lehrveranstaltung_id=lehrveranstaltung.id, filename=upload.filename) }}">{{ upload.filename }}</a>
+            <article>
+                <a href="{{ url_for('upload_detail', encoded_name=lehrveranstaltung.encoded_name, upload_id=upload.id) }}">{{ upload.filename }}</a>
                 <p>Uploaded by: {{ upload.uploaded_by }} on {{ upload.upload_date }}</p>
                 <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span></p>
                 <button onclick="likeUpload({{ upload.id }})">Like</button>
-            </li>
+                <p>DEBUGGING: Upload_id = {{upload.id}}</p>
+            </article>
         {% endfor %}
-    </ul>
+    </div>
     <h2>Upload a new file</h2>
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}

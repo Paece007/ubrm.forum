@@ -3,7 +3,7 @@ from datetime import datetime
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, HiddenField
+from wtforms import StringField, PasswordField, SubmitField, HiddenField, TextAreaField
 from flask_wtf.file import FileField, FileRequired
 from wtforms.validators import InputRequired, Length, ValidationError, DataRequired
 from flask_bcrypt import Bcrypt
@@ -35,6 +35,13 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
     password = PasswordField('Password', validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Password"})
     submit = SubmitField('Login')
+
+class CommentForm(FlaskForm):
+    content = TextAreaField('Comment', validators=[DataRequired()])
+    upload_id = HiddenField('Upload_id', validators=[DataRequired()])
+    uploaded_by = HiddenField('Uploaded_by', validators=[DataRequired()])
+    upload_date = HiddenField('Upload_date', validators=[DataRequired()])    
+    submit = SubmitField('Post Comment')
 
 
 class Lehrveranstaltung(db.Model):
@@ -78,3 +85,13 @@ class Like(db.Model):
 
     def __repr__(self):
         return f'<Like {self.upload_id} by {self.user_id}>'
+    
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    upload_id = db.Column(db.Integer, db.ForeignKey('upload.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    upload_date = db.Column(db.DateTime, default=datetime)
+
+    def __repr__(self):
+        return f'<Comment {self.content[:20]}>'

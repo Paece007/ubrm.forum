@@ -1,0 +1,29 @@
+:root {
+    --gap: 1rem; /* Define a gap variable for easy adjustments */
+    --padding: 0.5rem; /* Define padding variable */
+    --margin-bottom: 1rem; /* Define margin-bottom variable */
+    --height: 12.5rem; /* Define height variable */
+  }
+  
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap); /* Use the gap variable */
+  }
+  
+  .grid > .course {
+    flex: 1 1 calc(33.333% - var(--gap)); /* Adjust the percentage and gap as needed */
+    box-sizing: border-box;
+  }
+  
+  @media (max-width: 768px) {
+    .grid > .course {
+      flex: 1 1 calc(50% - var(--gap));
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .grid > .course {
+      flex: 1 1 100%;
+    }
+  }

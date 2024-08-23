@@ -2,17 +2,33 @@
 {% block title %}Lehrveranstaltungen{% endblock %}
 {% block content %}
     <h1>Lehrveranstaltungen</h1>
-    <div class="grid">
+    <input autofocus type="text" id="searchInput" placeholder="Lehrveranstaltung suchen" onkeyup="filterCourses()">
+    <div class="grid" id="coursesGrid">
         {% for lehrveranstaltung in lehrveranstaltungen %}
-            <div>
+            <div class="course">
                 <article>
                     <a href="{{ url_for('lv_detail', encoded_name=lehrveranstaltung.encoded_name) }}">{{ lehrveranstaltung.name }}</a>
-                    <p>ECTS: {{ lehrveranstaltung.ects }}</p>
-                    <p>Professor: {{ lehrveranstaltung.professor }}</p>
-                    <p>Schwierigkeit:{{ lehrveranstaltung.difficulty }}</p>
-                    <p>Verwendete Zeit: {{ lehrveranstaltung.time_spent }}</p>
+                    <p>{{ lehrveranstaltung.id }}</p>
                 </article>
             </div>
         {% endfor %}
     </div>
+    <script>
+        function filterCourses() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const coursesGrid = document.getElementById('coursesGrid');
+            const courses = coursesGrid.getElementsByClassName('course');
+
+            for (let i = 0; i < courses.length; i++) {
+                const course = courses[i];
+                const courseName = course.getElementsByTagName('a')[0].textContent || course.getElementsByTagName('a')[0].innerText;
+                if (courseName.toLowerCase().indexOf(filter) > -1) {
+                    course.style.display = "";
+                } else {
+                    course.style.display = "none";
+                }
+            }
+        }
+    </script>
 {% endblock %}

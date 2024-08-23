@@ -148,10 +148,27 @@ def lehrveranstaltungen():
 @app.route('/lehrveranstaltungen/<encoded_name>', methods=['GET', 'POST'])
 @login_required
 def lv_detail(encoded_name):
-    print("Encoded name: ?", encoded_name)
-    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(encoded_name)).first()
-    print(lehrveranstaltung.name)
-    print(lehrveranstaltung.id)
+    # Decode the URL-encoded name
+    decoded_name = urllib.parse.unquote(name)
+    app.logger.info(f"Encoded name: {name}")
+    app.logger.info(f"Decoded name: {decoded_name}")
+    
+    lehrveranstaltung = get_lehrveranstaltung(decoded_name)
+    
+    if lehrveranstaltung is None:
+        app.logger.error(f"Lehrveranstaltung with name {decoded_name} not found.")
+        return "Lehrveranstaltung not found", 404
+    
+    # Debugging print statement
+    print(f"Lehrveranstaltung: {lehrveranstaltung}")
+    
+    # Ensure lehrveranstaltung is not None before accessing its attributes
+    if lehrveranstaltung:
+        print(lehrveranstaltung.name)
+    else:
+        app.logger.error("Lehrveranstaltung is None.")
+        return "Error: Lehrveranstaltung is None", 500
+    
 
     lv_folder = os.path.join(app.config['UPLOAD_FOLDER'],str(lehrveranstaltung.id))
     if not os.path.exists(lv_folder):

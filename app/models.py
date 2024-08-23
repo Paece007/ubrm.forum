@@ -2,6 +2,7 @@ print("Importing configurations... (models) ")
 from datetime import datetime
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import LargeBinary
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, HiddenField, TextAreaField
 from flask_wtf.file import FileField, FileRequired
@@ -69,6 +70,7 @@ class UploadFileForm(FlaskForm):
 class Upload(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), nullable=False)
+    data = db.Column(LargeBinary, nullable=False)
     Lehrveranstaltung_id = db.Column(db.Integer, db.ForeignKey('lehrveranstaltung.id'), nullable=False)
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     upload_date = db.Column(db.DateTime, default=datetime)

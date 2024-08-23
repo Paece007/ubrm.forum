@@ -1,18 +1,18 @@
 # Import the configuration
 print("Importing configuration...(App)")
-from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify, request
+from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify, request, make_response, send_file
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect
 from flask_login import login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
-import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from config import Config
 import urllib.parse
 from urllib.parse import unquote
 from flask_wtf.csrf import CSRFProtect
+from io import BytesIO
 
 
 print("Configuration imported. (App)")
@@ -72,30 +72,32 @@ def index():
 def download_file(lehrveranstaltung_id, filename):
     
     print("Download request received")
-
     print("Lehrveranstaltung ID: ", lehrveranstaltung_id)
     print("Filename: ", filename)
 
-    # Define the directory where files are stored
-    upload_directory = os.path.join(app.root_path, 'static', 'files', str(lehrveranstaltung_id))
-    
-    print("Upload directory: ", upload_directory)
     # Ensure the filename is not None
     if filename is None:
         print("Error: Filename is None.")
         abort(404)
+
+    # Query the database for the file
+    upload = Upload.query.filter_by(Lehrveranstaltung_id=lehrveranstaltung_id, filename=filename).first()
     
-    # Construct the full file path
-    file_path = os.path.join(upload_directory, filename)
-    
-    # Check if the file exists
-    if not os.path.exists(file_path):
-        print("Error: File does not exist.")
+
+    # Check if the file exists in the database
+    if upload is None:
+        print("Error: File does not exist in the database.")
         abort(404)
+
+    print("File found in database.")
     
-    print("File path: ", file_path)
+    # Create a BytesIO object from the file data
+    file_data = BytesIO(upload.data)
+
     # Send the file to the client
-    return send_from_directory(upload_directory, filename)
+    response = make_response(send_file(file_data, as_attachment=True, download_name=filename))
+    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+    return response
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -113,24 +115,29 @@ def login():
             app.logger.debug(f"User found: {user.username}")
             app.logger.debug(f"Stored password hash: {user.password}")
             app.logger.debug(f"Provided password: {form.password.data}")
-        try:
-            if bcrypt.check_password_hash(user.password, form.password.data):
-                app.logger.info("User authenticated.")
-                login_user(user)
-                next_page = request.args.get('next')
-                app.logger.info(f"Next page: {next_page}")
-                if next_page and next_page != url_for('logout'):
-                    app.logger.info(f"Redirecting to next page: {next_page}")
-                    return redirect(next_page)
+            try:
+                if bcrypt.check_password_hash(user.password, form.password.data):
+                    app.logger.info("User authenticated.")
+                    login_user(user)
+                    next_page = request.args.get('next')
+                    app.logger.info(f"Next page: {next_page}")
+                    if next_page and next_page != url_for('logout'):
+                        app.logger.info(f"Redirecting to next page: {next_page}")
+                        return redirect(next_page)
+                    else:
+                        app.logger.info("Redirecting to dashboard.")
+                        return redirect(url_for('dashboard'))
                 else:
-                    app.logger.info("Redirecting to dashboard.")
-                    return redirect(url_for('dashboard'))
-            else:
-                app.logger.warning("Password check failed for user: %s", user.username)
-        except ValueError as e:
-            app.logger.error(f"Error during password check: {e}")
+                    app.logger.warning("Password check failed for user: %s", user.username)
+                    flash('Invalid username or password.', 'danger')
+            except ValueError as e:
+                app.logger.error(f"Error during password check: {e}")
+                flash('An error occurred during login. Please try again.', 'danger')
+        else:
+            app.logger.warning("User not found: %s", form.username.data)
+            flash('Invalid username or password.', 'danger')
     else:
-        app.logger.warning("User not found: %s", form.username.data)
+        app.logger.warning("Form validation failed.")
         flash('Invalid username or password.', 'danger')
     return render_template('login.html', form=form)
 
@@ -190,14 +197,6 @@ def lv_detail(encoded_name):
         app.logger.error(f"Lehrveranstaltung with name {decoded_name} not found.")
         return "Lehrveranstaltung not found", 404 
 
-    lv_folder = os.path.join(app.config['UPLOAD_FOLDER'],str(lehrveranstaltung.id))
-    if not os.path.exists(lv_folder):
-        try:
-            os.makedirs(lv_folder)
-            print(f"Created folder: {lv_folder}")
-        except Exception as e:
-            print(f"Error creating folder: {e}")
-            abort(500)
 
     form = UploadFileForm()
     #Upload form
@@ -211,15 +210,16 @@ def lv_detail(encoded_name):
         print("Form validated successfully.")
         f = form.file.data
         filename = secure_filename(f.filename)
-        file_path = f.save(os.path.join(lv_folder, filename))
-        print(f"File saved to {file_path}")
 
+        file_content = f.read()
+        
         # Save upload information to the database
         upload = Upload(
             filename=filename,
             Lehrveranstaltung_id=lehrveranstaltung_id,
             uploaded_by=current_user.id,
-            upload_date=datetime.now()
+            upload_date=datetime.now(),
+            data=file_content
         )
         db.session.add(upload)
         db.session.commit()
@@ -300,20 +300,20 @@ def add_comment(upload_id):
 def delete_comment(comment_id):
     comment = Comment.query.get(comment_id)
     if not comment:
-        logging.warning(f"Comment with id {comment_id} not found.")
+        app.logger.warning(f"Comment with id {comment_id} not found.")
         return jsonify({'error': 'Comment not found'}), 404
 
     if comment.user_id != current_user.id:
-        logging.warning(f"Unauthorized delete attempt by user {current_user.id} for comment {comment_id}.")
+        app.logger.warning(f"Unauthorized delete attempt by user {current_user.id} for comment {comment_id}.")
         return jsonify({'error': 'Unauthorized'}), 403
 
     try:
         db.session.delete(comment)
         db.session.commit()
-        logging.info(f"Comment {comment_id} deleted by user {current_user.id}.")
+        app.logger.info(f"Comment {comment_id} deleted by user {current_user.id}.")
         return jsonify({'success': True}), 200
     except Exception as e:
-        logging.error(f"Error deleting comment {comment_id}: {e}")
+        app.logger.error(f"Error deleting comment {comment_id}: {e}")
         db.session.rollback()
         return jsonify({'error': 'Internal Server Error'}), 500
 

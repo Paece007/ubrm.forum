@@ -151,16 +151,14 @@ def lehrveranstaltungen():
 @app.route('/lehrveranstaltungen/<encoded_name>', methods=['GET', 'POST'])
 @login_required
 def lv_detail(encoded_name):
-    # Decode the URL-encoded name
-    decoded_name = urllib.parse.unquote(encoded_name)
+    # Decode the URL-encoded name twice
+    decoded_name = urllib.parse.unquote(urllib.parse.unquote(encoded_name))
     app.logger.info(f"Encoded name: {encoded_name}")
     app.logger.info(f"Decoded name: {decoded_name}")
-    
 
-    print("Encoded name: ?", encoded_name)
-    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(encoded_name)).first()
-    print(lehrveranstaltung.name)
-    print(lehrveranstaltung.id)
+    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=decoded_name).first()
+    app.logger.info(lehrveranstaltung.name)
+    app.logger.info(lehrveranstaltung.id)
     
     if lehrveranstaltung is None:
         app.logger.error(f"Lehrveranstaltung with name {decoded_name} not found.")

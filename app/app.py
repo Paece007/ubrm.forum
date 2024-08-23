@@ -188,23 +188,16 @@ def lv_detail(encoded_name):
     
     if lehrveranstaltung is None:
         app.logger.error(f"Lehrveranstaltung with name {decoded_name} not found.")
-        return "Lehrveranstaltung not found", 404
-    
-    # Debugging print statement
-    print(f"Lehrveranstaltung: {lehrveranstaltung}")
-    
-    # Ensure lehrveranstaltung is not None before accessing its attributes
-    if lehrveranstaltung:
-        print(lehrveranstaltung.name)
-    else:
-        app.logger.error("Lehrveranstaltung is None.")
-        return "Error: Lehrveranstaltung is None", 500
-    
+        return "Lehrveranstaltung not found", 404 
 
     lv_folder = os.path.join(app.config['UPLOAD_FOLDER'],str(lehrveranstaltung.id))
     if not os.path.exists(lv_folder):
-        print("Error: Lehrveranstaltung folder does not exist.")
-        abort(404)
+        try:
+            os.makedirs(lv_folder)
+            print(f"Created folder: {lv_folder}")
+        except Exception as e:
+            print(f"Error creating folder: {e}")
+            abort(500)
 
     form = UploadFileForm()
     #Upload form

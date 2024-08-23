@@ -22,10 +22,6 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Ensure the instance path exists
-    os.makedirs(app.config['INSTANCE_PATH'], exist_ok=True)
-    app.instance_path = app.config['INSTANCE_PATH']
-
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)

@@ -14,7 +14,6 @@ import urllib.parse
 from urllib.parse import unquote
 from flask_wtf.csrf import CSRFProtect
 
-import logging
 
 print("Configuration imported. (App)")
 
@@ -27,7 +26,10 @@ app = create_app()
 if __name__ == '__main__':
     app.run(debug=True)
 
+app.logger.info("App started successfully.")
 
+
+app.logger.info("Importing models...(App)")
 print("Importing models...(App)")
 try:
     from app import models
@@ -150,11 +152,15 @@ def lehrveranstaltungen():
 @login_required
 def lv_detail(encoded_name):
     # Decode the URL-encoded name
-    decoded_name = urllib.parse.unquote(name)
-    app.logger.info(f"Encoded name: {name}")
+    decoded_name = urllib.parse.unquote(encoded_name)
+    app.logger.info(f"Encoded name: {encoded_name}")
     app.logger.info(f"Decoded name: {decoded_name}")
     
-    lehrveranstaltung = get_lehrveranstaltung(decoded_name)
+
+    print("Encoded name: ?", encoded_name)
+    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(encoded_name)).first()
+    print(lehrveranstaltung.name)
+    print(lehrveranstaltung.id)
     
     if lehrveranstaltung is None:
         app.logger.error(f"Lehrveranstaltung with name {decoded_name} not found.")

@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 import logging
+import tempfile
 import os
 
 
@@ -21,6 +22,9 @@ logging.basicConfig(level=logging.INFO)
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(Config)
+
+    # Override instance_path to a temporary directory
+    app.instance_path = tempfile.mkdtemp()
 
     db.init_app(app)
     bcrypt.init_app(app)

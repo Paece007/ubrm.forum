@@ -2,14 +2,13 @@
 __pycache__/
 
 # Environment
-.env
+app/.env
 
 # Virtual Environment
-venv/
+.venv/
 
 # Database
-instance/db.sqlite
+instance/database.sqlite
 
 # Configuration
-.config
 config.py

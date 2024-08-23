@@ -177,7 +177,10 @@ def protected():
 @app.route('/lehrveranstaltungen')
 @login_required
 def lehrveranstaltungen():
+    app.logger.info("Lehrveranstaltungen request received.")
     lehrveranstaltungen = Lehrveranstaltung.query.order_by(Lehrveranstaltung.name).all()
+    
+    app.logger.info(f"Lehrveranstaltungen: {lehrveranstaltungen}")
     return render_template('lehrveranstaltungen.html', lehrveranstaltungen=lehrveranstaltungen)
 
 

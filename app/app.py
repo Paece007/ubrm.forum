@@ -99,21 +99,39 @@ def download_file(lehrveranstaltung_id, filename):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    app.logger.info("Login request received.")
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
+    app.logger.info("Creating login form.")
     form = LoginForm()
     if form.validate_on_submit():
+        app.logger.info("Form validated successfully.")
         user = User.query.filter_by(username=form.username.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user)
-            next_page = request.args.get('next')
-            if next_page and next_page != url_for('logout'):
-                return redirect(next_page)
+        app.logger.info(f"User: {user}")
+        if user:
+            app.logger.debug(f"User found: {user.username}")
+            app.logger.debug(f"Stored password hash: {user.password}")
+            app.logger.debug(f"Provided password: {form.password.data}")
+        try:
+            if bcrypt.check_password_hash(user.password, form.password.data):
+                app.logger.info("User authenticated.")
+                login_user(user)
+                next_page = request.args.get('next')
+                app.logger.info(f"Next page: {next_page}")
+                if next_page and next_page != url_for('logout'):
+                    app.logger.info(f"Redirecting to next page: {next_page}")
+                    return redirect(next_page)
+                else:
+                    app.logger.info("Redirecting to dashboard.")
+                    return redirect(url_for('dashboard'))
             else:
-                return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid username or password.', 'danger')
+                app.logger.warning("Password check failed for user: %s", user.username)
+        except ValueError as e:
+            app.logger.error(f"Error during password check: {e}")
+    else:
+        app.logger.warning("User not found: %s", form.username.data)
+        flash('Invalid username or password.', 'danger')
     return render_template('login.html', form=form)
 
 
@@ -121,7 +139,15 @@ def login():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data)
+        password = form.password.data
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        print(f"Hashed password: {hashed_password}")
+
+        # Checking a password
+        is_correct = bcrypt.check_password_hash(hashed_password, password)
+        print(f"Password is correct: {is_correct}")
+
+
         new_user = User(username=form.username.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()

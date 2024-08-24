@@ -14,6 +14,8 @@ from urllib.parse import unquote
 from flask_wtf.csrf import CSRFProtect
 from io import BytesIO
 
+from config import Config
+
 
 print("Configuration imported. (App)")
 

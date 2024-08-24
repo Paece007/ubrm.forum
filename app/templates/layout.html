@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}Forum{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/pico/css/pico.classless.jade.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/styles.css') }}">
@@ -76,6 +77,14 @@
         });
     </script>
         <p>&copy; 2024  Philipp Wiederkehr</p>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", $("meta[name='csrf-token']").attr("content"));
+                }
+            });
+        </script>
     </footer>
 </body>
 </html>

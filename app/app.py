@@ -147,6 +147,7 @@ def register():
     form = RegisterForm()
     if request.method == 'GET':
         print(f"CSRF Token (GET): {form.csrf_token.data}")
+        print(f"Session Data (GET): {session}")
     if form.validate_on_submit():
         password = form.password.data
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -164,6 +165,8 @@ def register():
     
     if request.method == 'POST':
         print(f"Form Data (POST): {request.form}")
+        print(f"CSRF Token (POST): {form.csrf_token.data}")
+        print(f"Session Data (POST): {session}")
 
     return render_template('register.html', form=form)
 

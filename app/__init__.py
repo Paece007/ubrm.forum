@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def create_app():
-    app = Flask(__name__, instance_relative_config=False)
+    app = Flask(__name__)
     app.config.from_object(Config)
 
     # Override instance_path to a temporary directory

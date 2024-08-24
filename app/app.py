@@ -1,6 +1,6 @@
 # Import the configuration
 print("Importing configuration...(App)")
-from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify, request, make_response, send_file
+from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify, request, make_response, send_file, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect
 from flask_login import login_user, login_required, logout_user, current_user
@@ -107,6 +107,11 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
+    csrf_token = request.form.get('csrf_token')
+    app.logger.info(f"CSRF Token: {csrf_token}")
+    app.logger.info(f"Session Data: {session}")
+
+
     app.logger.info("Creating login form.")
     form = LoginForm()
     if form.validate_on_submit():
@@ -122,7 +127,6 @@ def login():
                     app.logger.info("User authenticated.")
                     login_user(user)
                     next_page = request.args.get('next')
-                    app.logger.info(f"Next page: {next_page}")
                     if next_page and next_page != url_for('logout'):
                         app.logger.info(f"Redirecting to next page: {next_page}")
                         return redirect(next_page)
@@ -335,3 +339,7 @@ def delete_comment(comment_id):
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(url_for('static', filename='favicon.ico'))

@@ -145,6 +145,8 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
+    if request.method == 'GET':
+        print(f"CSRF Token (GET): {form.csrf_token.data}")
     if form.validate_on_submit():
         password = form.password.data
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -159,6 +161,9 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        print(f"Form Data (POST): {request.form}")
 
     return render_template('register.html', form=form)
 

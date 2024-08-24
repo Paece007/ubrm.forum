@@ -77,11 +77,13 @@
         });
     </script>
         <p>&copy; 2024  Philipp Wiederkehr</p>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
             $.ajaxSetup({
                 beforeSend: function(xhr, settings) {
-                    xhr.setRequestHeader("X-CSRFToken", $("meta[name='csrf-token']").attr("content"));
+                    const csrfToken = $("meta[name='csrf-token']").attr("content");
+                    console.log(`CSRF Token (AJAX): ${csrfToken}`);
+                    xhr.setRequestHeader("X-CSRFToken", csrfToken);
                 }
             });
         </script>

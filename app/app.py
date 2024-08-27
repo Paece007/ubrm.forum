@@ -111,7 +111,7 @@ def login():
     app.logger.info(f"CSRF Token: {csrf_token}")
     app.logger.info(f"Session Data: {session}")
 
-
+    
     app.logger.info("Creating login form.")
     form = LoginForm()
     if form.validate_on_submit():
@@ -342,4 +342,4 @@ def logout():
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(url_for('static', filename='favicon.ico'))
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico')

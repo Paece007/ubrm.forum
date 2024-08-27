@@ -13,16 +13,4 @@
         </fieldset>
     </form>
     <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a> now!</p>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function(event) {
-                const csrfToken = document.querySelector('input[name="csrf_token"]').value;
-                if (!csrfToken) {
-                    event.preventDefault();
-                    alert('CSRF token is missing. Please refresh the page and try again.');
-                }
-            });
-        });
-        </script>
     {% endblock %}

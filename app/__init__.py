@@ -31,6 +31,7 @@ def create_app():
     bcrypt.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)  # Ensure CSRF protection is enabled globally
+    logging.info(f"CSRF Protection enabled: {app.config['WTF_CSRF_ENABLED']}")
 
     @app.before_request
     def log_csrf_token():
@@ -38,6 +39,10 @@ def create_app():
         logging.info(f"CSRF Token from cookie: {token}")
         form_token = request.form.get('csrf_token')
         logging.info(f"CSRF Token from form: {form_token}")
+        if not token:
+            logging.warning("CSRF token not found in cookies.")
+        if not form_token:
+            logging.warning("CSRF token not found in form.")
 
     with app.app_context():
         db.create_all()

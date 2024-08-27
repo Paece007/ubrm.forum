@@ -5,3 +5,28 @@
     --background-color: #F5F5DC; /* Beige */
     --text-color: #000000; /* Black */
 }
+
+.tree {
+    position: absolute;
+    bottom: 0;
+    width: 50px;
+    height: 100px;
+    background-image: url('{{ url_for('static', filename='images/tree.jpg') }}'); /* Static tree image */
+    background-size: contain;
+    background-repeat: no-repeat;
+    animation: growTree 5s forwards;
+    z-index: -1; /* Ensure the tree is in the background */
+}
+
+@keyframes growTree {
+    0% {
+        transform: scaleY(0);
+    }
+    100% {
+        transform: scaleY(1);
+    }
+}
+.content {
+    position: relative;
+    z-index: 1; /* Ensure content is above the background */
+}

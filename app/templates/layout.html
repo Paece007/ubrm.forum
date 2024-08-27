@@ -44,29 +44,7 @@
         });
     </script>
     <style>
-        .tree {
-            position: absolute;
-            bottom: 0;
-            width: 50px;
-            height: 100px;
-            background-image: url('{{ url_for('static', filename='images/tree.jpg') }}'); /* Static tree image */
-            background-size: contain;
-            background-repeat: no-repeat;
-            animation: growTree 5s forwards;
-            z-index: -1; /* Ensure the tree is in the background */
-        }
-        @keyframes growTree {
-            0% {
-                transform: scaleY(0);
-            }
-            100% {
-                transform: scaleY(1);
-            }
-        }
-        .content {
-            position: relative;
-            z-index: 1; /* Ensure content is above the background */
-        }
+        
     </style>
     <script>
         document.getElementById('growTreeButton').addEventListener('click', function() {
@@ -78,16 +56,6 @@
         });
     </script>
         <p>&copy; 2024  Philipp Wiederkehr</p>
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script>
-            $.ajaxSetup({
-                beforeSend: function(xhr, settings) {
-                    const csrfToken = $("meta[name='csrf-token']").attr("content");
-                    console.log(`CSRF Token (AJAX): ${csrfToken}`);
-                    xhr.setRequestHeader("X-CSRFToken", csrfToken);
-                }
-            });
-        </script>
     </footer>
 </body>
 </html>

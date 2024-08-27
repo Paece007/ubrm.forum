@@ -11,7 +11,6 @@ from datetime import datetime
 from config import Config
 import urllib.parse
 from urllib.parse import unquote
-from flask_wtf.csrf import CSRFProtect
 from io import BytesIO
 import os
 
@@ -104,6 +103,10 @@ def download_file(lehrveranstaltung_id, filename):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        app.logger.info(f"Login form submitted with data: {request.form}")
+        form_token = request.form.get('csrf_token')
+        app.logger.info(f"CSRF Token from form: {form_token}")
     app.logger.info("Login request received.")
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
@@ -161,11 +164,6 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        print(f"Form Data (POST): {request.form}")
-        print(f"CSRF Token (POST): {form.csrf_token.data}")
-        print(f"Session Data (POST): {session}")
 
     return render_template('register.html', form=form)
 
@@ -306,7 +304,6 @@ def add_comment(upload_id):
 
 @app.route('/delete_comment/<int:comment_id>', methods=['DELETE'])
 @login_required
-@csrf.exempt  # Ensure CSRF protection is applied globally or use a token in the request
 def delete_comment(comment_id):
     comment = Comment.query.get(comment_id)
     if not comment:

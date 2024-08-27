@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, request  # Import the request object
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
@@ -30,6 +31,13 @@ def create_app():
     bcrypt.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)  # Ensure CSRF protection is enabled globally
+
+    @app.before_request
+    def log_csrf_token():
+        token = request.cookies.get('csrf_token')
+        logging.info(f"CSRF Token from cookie: {token}")
+        form_token = request.form.get('csrf_token')
+        logging.info(f"CSRF Token from form: {form_token}")
 
     with app.app_context():
         db.create_all()

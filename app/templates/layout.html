@@ -28,6 +28,15 @@
         </nav>
     </header>
     <main>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class=flashes>
+                    {% for message in messages %}
+                        <h5>{{ message }}</h5>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
     <footer>

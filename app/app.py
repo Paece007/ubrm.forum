@@ -103,10 +103,6 @@ def download_file(lehrveranstaltung_id, filename):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        app.logger.info(f"Login form submitted with data: {request.form}")
-        form_token = request.form.get('csrf_token')
-        app.logger.info(f"CSRF Token from form: {form_token}")
     app.logger.info("Login request received.")
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
@@ -119,37 +115,36 @@ def login():
             app.logger.warning("CSRF token is missing.")
             flash('CSRF token is missing. Please refresh the page and try again.', 'danger')
             return redirect(url_for('login'))
-    if form.validate_on_submit():
-        app.logger.info("Form validated successfully.")
-        user = User.query.filter_by(username=form.username.data).first()
-        app.logger.info(f"User: {user}")
-        if user:
-            app.logger.debug(f"User found: {user.username}")
-            app.logger.debug(f"Stored password hash: {user.password}")
-            app.logger.debug(f"Provided password: {form.password.data}")
-            try:
-                if bcrypt.check_password_hash(user.password, form.password.data):
-                    app.logger.info("User authenticated.")
-                    login_user(user)
-                    next_page = request.args.get('next')
-                    if next_page and next_page != url_for('logout'):
-                        app.logger.info(f"Redirecting to next page: {next_page}")
-                        return redirect(next_page)
+        if form.validate_on_submit():
+            app.logger.info("Form validated successfully.")
+            user = User.query.filter_by(username=form.username.data).first()
+            app.logger.info(f"User: {user}")
+            if user:
+                app.logger.debug(f"User found: {user.username}")
+                app.logger.debug(f"Stored password hash: {user.password}")
+                app.logger.debug(f"Provided password: {form.password.data}")
+                try:
+                    if bcrypt.check_password_hash(user.password, form.password.data):
+                        app.logger.info("User authenticated.")
+                        login_user(user)
+                        next_page = request.args.get('next')
+                        if next_page and next_page != url_for('logout'):
+                            app.logger.info(f"Redirecting to next page: {next_page}")
+                            flash('You have been logged in.', 'success')
+                            return redirect(next_page)
+                        else:
+                            app.logger.info("Redirecting to dashboard.")
+                            flash('You have been logged in.', 'success')
+                            return redirect(url_for('dashboard'))
                     else:
-                        app.logger.info("Redirecting to dashboard.")
-                        return redirect(url_for('dashboard'))
-                else:
-                    app.logger.warning("Password check failed for user: %s", user.username)
-                    flash('Invalid username or password.', 'danger')
-            except ValueError as e:
-                app.logger.error(f"Error during password check: {e}")
-                flash('An error occurred during login. Please try again.', 'danger')
-        else:
-            app.logger.warning("User not found: %s", form.username.data)
-            flash('Invalid username or password.', 'danger')
-    else:
-        app.logger.warning("Form validation failed.")
-        flash('Invalid username or password.', 'danger')
+                        app.logger.warning("Password check failed for user: %s", user.username)
+                        flash('Invalid username or password.', 'danger')
+                except ValueError as e:
+                    app.logger.error(f"Error during password check: {e}")
+                    flash('An error occurred during login. Please try again.', 'danger')
+            else:
+                app.logger.warning("User not found: %s", form.username.data)
+                flash('Invalid username or password.', 'danger')
     return render_template('login.html', form=form)
 
 

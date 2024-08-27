@@ -334,6 +334,8 @@ def delete_comment(comment_id):
 @login_required
 def logout():
     logout_user()
+    session.clear()  # Clear the session to remove all session data, including the CSRF token
+    flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 
 @app.route('/favicon.ico')

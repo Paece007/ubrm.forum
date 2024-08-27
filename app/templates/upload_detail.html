@@ -2,7 +2,8 @@
 {% block title %}{{ upload.filename }}{% endblock %}
 {% block content %}
 
-    <h2>{{ upload.filename }}</h2>
+    <h2>{{ lehrveranstaltung.name }}</h2>
+    <h3>{{ upload.filename }}</h3>
     <p>Uploaded by: {{ upload.uploaded_by }} on {{ upload.upload_date }}</p>
     <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span> <button onclick="likeUpload({{ upload.id }})">Like</button></p>
     <a href="{{ url_for('download_file', lehrveranstaltung_id=lehrveranstaltung.id, filename=upload.filename) }}">{{ upload.filename }}</a>
@@ -23,7 +24,7 @@
     </ul>
 
 
-    <h2>Add a Comment</h2>
+    <h4>Add a Comment</h4>
     <form id="comment-form">
         {{ form.hidden_tag() }}
         <div>

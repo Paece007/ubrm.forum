@@ -151,25 +151,28 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    if form.validate_on_submit():
-        password = form.password.data
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        print(f"Hashed password: {hashed_password}")
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            password = form.password.data
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            print(f"Hashed password: {hashed_password}")
 
-        # Checking a password
-        is_correct = bcrypt.check_password_hash(hashed_password, password)
-        print(f"Password is correct: {is_correct}")
+            # Checking a password
+            is_correct = bcrypt.check_password_hash(hashed_password, password)
+            print(f"Password is correct: {is_correct}")
 
 
-        new_user = User(username=form.username.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-
+            new_user = User(username=form.username.data, password=hashed_password)
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for('login'))
+        else:
+            flash('Invalid input. Please try again.', 'danger')
+            return render_template('register.html', form=form)
     return render_template('register.html', form=form)
 
 
-@app.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('dashboard.html')
@@ -186,7 +189,6 @@ def lehrveranstaltungen():
     app.logger.info("Lehrveranstaltungen request received.")
     lehrveranstaltungen = Lehrveranstaltung.query.order_by(Lehrveranstaltung.name).all()
     
-    app.logger.info(f"Lehrveranstaltungen: {lehrveranstaltungen}")
     return render_template('lehrveranstaltungen.html', lehrveranstaltungen=lehrveranstaltungen)
 
 
@@ -206,39 +208,38 @@ def lv_detail(encoded_name):
         app.logger.error(f"Lehrveranstaltung with name {decoded_name} not found.")
         return "Lehrveranstaltung not found", 404 
 
-
     form = UploadFileForm()
-    #Upload form
-
-    # Set the Lehrveranstaltung_id field to the ID of the current Lehrveranstaltung
-    lehrveranstaltung_id = Lehrveranstaltung.query.filter_by(name=lehrveranstaltung.name).first().id
-    form.Lehrveranstaltung_id.data = lehrveranstaltung_id
-    form.uploaded_by.data = current_user.username
-    form.upload_date.data = datetime.now()
-    if form.validate_on_submit():
-        print("Form validated successfully.")
-        f = form.file.data
-        filename = secure_filename(f.filename)
-
-        file_content = f.read()
+    if request.method == 'POST':
         
-        # Save upload information to the database
-        upload = Upload(
-            filename=filename,
-            Lehrveranstaltung_id=lehrveranstaltung_id,
-            uploaded_by=current_user.id,
-            upload_date=datetime.now(),
-            data=file_content
-        )
-        db.session.add(upload)
-        db.session.commit()
-        print("Upload saved to the database.")
+        # Set the Lehrveranstaltung_id field to the ID of the current Lehrveranstaltung
+        lehrveranstaltung_id = Lehrveranstaltung.query.filter_by(name=lehrveranstaltung.name).first().id
+        form.Lehrveranstaltung_id.data = lehrveranstaltung_id
+        form.uploaded_by.data = current_user.username
+        form.upload_date.data = datetime.now()
+        if form.validate_on_submit():
+            print("Form validated successfully.")
+            f = form.file.data
+            filename = secure_filename(f.filename)
 
-        flash('File uploaded successfully.', 'success')
-        return redirect(url_for('lv_detail', encoded_name=lehrveranstaltung.encoded_name))
-    else:
-        print("Form validation failed.")
-        print(form.errors)  # Print form errors to debug
+            file_content = f.read()
+            
+            # Save upload information to the database
+            upload = Upload(
+                filename=filename,
+                Lehrveranstaltung_id=lehrveranstaltung_id,
+                uploaded_by=current_user.id,
+                upload_date=datetime.now(),
+                data=file_content
+            )
+            db.session.add(upload)
+            db.session.commit()
+            print("Upload saved to the database.")
+
+            flash('File uploaded successfully.', 'success')
+            return redirect(url_for('lv_detail', encoded_name=lehrveranstaltung.encoded_name))
+        else:
+            print("Form validation failed.")
+            print(form.errors)  # Print form errors to debug
 
 
     uploads = Upload.query.filter_by(Lehrveranstaltung_id=lehrveranstaltung.id).all()

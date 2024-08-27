@@ -113,6 +113,12 @@ def login():
 
     app.logger.info("Creating login form.")
     form = LoginForm()
+    if request.method == 'POST':
+        csrf_token = request.form.get('csrf_token')
+        if not csrf_token:
+            app.logger.warning("CSRF token is missing.")
+            flash('CSRF token is missing. Please refresh the page and try again.', 'danger')
+            return redirect(url_for('login'))
     if form.validate_on_submit():
         app.logger.info("Form validated successfully.")
         user = User.query.filter_by(username=form.username.data).first()

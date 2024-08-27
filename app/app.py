@@ -13,6 +13,7 @@ import urllib.parse
 from urllib.parse import unquote
 from flask_wtf.csrf import CSRFProtect
 from io import BytesIO
+import os
 
 from config import Config
 
@@ -106,12 +107,7 @@ def login():
     app.logger.info("Login request received.")
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
-    
-    csrf_token = request.form.get('csrf_token')
-    app.logger.info(f"CSRF Token: {csrf_token}")
-    app.logger.info(f"Session Data: {session}")
 
-    
     app.logger.info("Creating login form.")
     form = LoginForm()
     if form.validate_on_submit():
@@ -151,9 +147,6 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    if request.method == 'GET':
-        print(f"CSRF Token (GET): {form.csrf_token.data}")
-        print(f"Session Data (GET): {session}")
     if form.validate_on_submit():
         password = form.password.data
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')

@@ -141,9 +141,6 @@ def login():
         else:
             app.logger.warning("User not found: %s", form.username.data)
             flash('Invalid username or password.', 'danger')
-    else:
-        app.logger.warning("Form validation failed.")
-        flash('Invalid username or password.', 'danger')
     return render_template('login.html', form=form)
 
 

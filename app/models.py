@@ -17,6 +17,7 @@ print("Configuration (models) imported.")
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
+    joined = db.Column(db.DateTime, default=datetime)
     username = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 

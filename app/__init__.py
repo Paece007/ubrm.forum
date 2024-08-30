@@ -43,6 +43,11 @@ def create_app():
     @app.before_request
     def log_csrf_token():
         if request.method == 'POST':
+            print("Cookies: ", request.cookies)
+            print("Form: ", request.form)
+            print("Session: ", session.items())
+            print("Headers: ", request.headers)
+
             token = request.cookies.get('csrf_token')
             form_token = request.form.get('csrf_token')
             if token != form_token:

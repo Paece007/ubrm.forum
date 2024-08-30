@@ -6,10 +6,10 @@
     <h1>Profil</h1>
 
     <!-- User Information -->
-    <h2>User Information</h2>
+    <h2>Benutzer Information</h2>
     <p><strong>Username:</strong> {{ user.username }}</p>
     <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Joined:</strong> {{ user.joined_date.strftime('%Y-%m-%d') }}</p>
+    <p><strong>Beigetreten:</strong> {{ user.joined.strftime('%Y-%m-%d') }}</p>
 
     <!-- Uploads -->
     <h2>Uploads</h2>
@@ -17,14 +17,14 @@
         <ul>
         {% for upload in uploads %}
             <li>
-                <strong>Title:</strong> {{ upload.title }}<br>
-                <strong>Description:</strong> {{ upload.description }}<br>
-                <strong>Uploaded on:</strong> {{ upload.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}
+                <strong>Titel:</strong> {{ upload.filename }}<br>
+                <strong>Lehrveranstaltung:</strong> {{ upload.Lehrveranstaltung_id }}<br>
+                <strong>Hochgeladen:</strong> {{ upload.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}
             </li>
         {% endfor %}
         </ul>
     {% else %}
-        <p>No uploads available.</p>
+        <p>Keine Uploads</p>
     {% endif %}
 
     <!-- Comments -->
@@ -33,18 +33,18 @@
         <ul>
         {% for comment in comments %}
             <li>
-                <strong>Comment:</strong> {{ comment.content }}<br>
-                <strong>Posted on:</strong> {{ comment.posted_date.strftime('%Y-%m-%d %H:%M:%S') }}
+                <strong>Kommentar:</strong> {{ comment.content }}<br>
+                <strong>Gepostet:</strong> {{ comment.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}
             </li>
         {% endfor %}
         </ul>
     {% else %}
-        <p>No comments available.</p>
+        <p>Keine Kommentare</p>
     {% endif %}
 
     <!-- Likes Received -->
     <h2>Likes Received</h2>
-    <p>{{ likes_received }}</p>
+    <p> Muss noch eingearbeitet werden...</p>
    
 
 {% endblock %}

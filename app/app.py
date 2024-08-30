@@ -110,24 +110,20 @@ def login():
     app.logger.info("Creating login form.")
     form = LoginForm()
     if request.method == 'POST':
-        csrf_token = request.form.get('csrf_token')
-        if not csrf_token:
-            app.logger.warning("CSRF token is missing.")
-            flash('CSRF token is missing. Please refresh the page and try again.', 'danger')
-            return redirect(url_for('login'))
+        session.clear()
         if form.validate_on_submit():
             app.logger.info("Form validated successfully.")
             user = User.query.filter_by(username=form.username.data).first()
             app.logger.info(f"User: {user}")
             if user:
-                app.logger.debug(f"User found: {user.username}")
-                app.logger.debug(f"Stored password hash: {user.password}")
-                app.logger.debug(f"Provided password: {form.password.data}")
                 try:
                     if bcrypt.check_password_hash(user.password, form.password.data):
+
                         app.logger.info("User authenticated.")
                         login_user(user)
                         next_page = request.args.get('next')
+                        
+                        
                         if next_page and next_page != url_for('logout'):
                             app.logger.info(f"Redirecting to next page: {next_page}")
                             flash('You have been logged in.', 'success')
@@ -155,6 +151,7 @@ def register():
         if form.validate_on_submit():
             username = form.username.data
             password = form.password.data
+            joined = datetime.now()
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
             print(f"Hashed password: {hashed_password}")
             
@@ -162,7 +159,7 @@ def register():
                 flash('Username already exists. Please choose a different one.', 'danger')
                 return redirect(url_for('register'))
             
-            new_user = User(username=username, password=hashed_password)
+            new_user = User(username=username, password=hashed_password, joined=joined)
             db.session.add(new_user)
             db.session.commit()
             return redirect(url_for('login'))
@@ -343,21 +340,3 @@ def favicon():
     response = make_response(send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico'))
     response.headers['Cache-Control'] = 'public, max-age=86400'  # Cache for 1 day
     return response
-
-@app.route('/set_csrf_token')
-def set_csrf_token():
-    token = generate_csrf()
-    response = make_response("CSRF token set")
-    response.set_cookie('csrf_token', token)
-    return response
-
-@app.route('/test_csrf', methods=['GET', 'POST'])
-def test_csrf():
-    if request.method == 'POST':
-        return "POST request received and CSRF token validated."
-    return '''
-        <form method="POST" action="/test_csrf">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit">Submit</button>
-        </form>
-    '''

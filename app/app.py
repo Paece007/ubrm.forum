@@ -21,7 +21,7 @@ print("Configuration imported. (App)")
 
 load_dotenv()
 
-from app import create_app, login_manager, db, bcrypt, csrf, session
+from app import create_app, login_manager, db, bcrypt, csrf
 from app.models import User, RegisterForm, LoginForm, Lehrveranstaltung, UploadFileForm, Upload, Like, CommentForm, Comment
 
 app = create_app()

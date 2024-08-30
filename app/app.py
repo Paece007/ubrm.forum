@@ -11,6 +11,7 @@ from urllib.parse import unquote
 from io import BytesIO
 import os
 import time
+import sys
 
 
 
@@ -51,6 +52,12 @@ with app.app_context():
     else:
         print("No tables found in the database.")
 
+if 'gunicorn' in sys.modules:
+        print("Running with Gunicorn")
+elif os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+    print("Running with Flask development server")
+else:
+    print(f"Running with an unknown server: {sys.argv[0]}")
 
 # Create a user loader function
 @login_manager.user_loader

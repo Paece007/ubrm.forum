@@ -70,11 +70,6 @@ def load_user(user_id):
 def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
-    logout_user()
-    session.clear()  # Clear the session to remove all session data, including the CSRF token
-    cache.clear()
-    response = make_response(redirect(url_for('login')))
-    response.delete_cookie('csrf_token')  # Clear the session cookie
     return render_template('index.html')
 
 

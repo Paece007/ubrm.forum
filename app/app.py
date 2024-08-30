@@ -163,6 +163,7 @@ def register():
             new_user = User(username=username, password=hashed_password, joined=joined)
             db.session.add(new_user)
             db.session.commit()
+            flash('Your account has been created! You are now able to log in.', 'success')
             return redirect(url_for('login'))
         else:
             flash('Invalid input. Please try again.', 'danger')
@@ -338,7 +339,7 @@ def logout():
     session.clear()  # Clear the session to remove all session data, including the CSRF token
     cache.clear()
     response = make_response(redirect(url_for('login')))
-    response.delete_cookie('session')  # Clear the session cookie
+    response.delete_cookie('csrf_token')  # Clear the session cookie
     flash('You have been logged out.', 'success')
     return response
 

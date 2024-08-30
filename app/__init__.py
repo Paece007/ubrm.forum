@@ -1,9 +1,9 @@
-from flask import Flask, request, render_template, session, make_response
+from flask import Flask, request, render_template
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect, CSRFError, generate_csrf
+from flask_wtf.csrf import CSRFProtect, CSRFError
 import logging
 import tempfile
 from flask_caching import Cache

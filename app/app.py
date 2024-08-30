@@ -1,22 +1,15 @@
 # Import the configuration
 print("Importing configuration...(App)")
-from flask import Flask, render_template, flash, redirect, url_for, abort, send_from_directory, jsonify, request, make_response, send_file, session
-from flask_sqlalchemy import SQLAlchemy
+from flask import render_template, flash, redirect, url_for, abort, send_from_directory, jsonify, request, make_response, send_file, session
 from sqlalchemy import inspect
 from flask_login import login_user, login_required, logout_user, current_user
-from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from config import Config
 import urllib.parse
 from urllib.parse import unquote
 from io import BytesIO
 import os
-from flask_wtf.csrf import generate_csrf
-from config import Config
-from functools import wraps
-from werkzeug.exceptions import BadRequest
 import time
 
 
@@ -114,13 +107,14 @@ def log_csrf_token():
         form = LoginForm()
         timeout = 5  # Timeout in seconds
         start_time = time.time()
+        app.logger.warning("Starting CSRF token update.")
         while form.csrf_token.data == session.get('csrf_token'):
             if time.time() - start_time > timeout:
-                app.logger.error("CSRF token update timeout.")
+                app.logger.warning("CSRF token update timeout.")
                 break
             
             # Wait for the CSRF token to be updated
-            app.logger.info("Waiting for CSRF token to be updated...")
+            app.logger.warning("Waiting for CSRF token to be updated...")
             time.sleep(0.1)  # Sleep for 100 milliseconds
         app.logger.info("CSRF token updated.")
 

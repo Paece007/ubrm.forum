@@ -17,6 +17,7 @@ from flask_wtf.csrf import generate_csrf
 from config import Config
 from functools import wraps
 from werkzeug.exceptions import BadRequest
+import time
 
 
 
@@ -109,6 +110,19 @@ def log_csrf_token():
     if request.path == url_for('login'):
         logout_user()
         session.clear()
+        cache.clear()
+        form = LoginForm()
+        timeout = 5  # Timeout in seconds
+        start_time = time.time()
+        while form.csrf_token.data == session.get('csrf_token'):
+            if time.time() - start_time > timeout:
+                app.logger.error("CSRF token update timeout.")
+                break
+            
+            # Wait for the CSRF token to be updated
+            app.logger.info("Waiting for CSRF token to be updated...")
+            time.sleep(0.1)  # Sleep for 100 milliseconds
+        app.logger.info("CSRF token updated.")
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -346,6 +360,7 @@ def delete_comment(comment_id):
 def logout():
     logout_user()
     session.clear()  # Clear the session to remove all session data, including the CSRF token
+    cache.clear()
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 

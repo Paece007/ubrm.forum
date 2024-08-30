@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Profil{% endblock %}
+
+{% block content %}
+    <h1>Profil</h1>
+
+    <!-- User Information -->
+    <h2>User Information</h2>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Joined:</strong> {{ user.joined_date.strftime('%Y-%m-%d') }}</p>
+
+    <!-- Uploads -->
+    <h2>Uploads</h2>
+    {% if uploads %}
+        <ul>
+        {% for upload in uploads %}
+            <li>
+                <strong>Title:</strong> {{ upload.title }}<br>
+                <strong>Description:</strong> {{ upload.description }}<br>
+                <strong>Uploaded on:</strong> {{ upload.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No uploads available.</p>
+    {% endif %}
+
+    <!-- Comments -->
+    <h2>Comments</h2>
+    {% if comments %}
+        <ul>
+        {% for comment in comments %}
+            <li>
+                <strong>Comment:</strong> {{ comment.content }}<br>
+                <strong>Posted on:</strong> {{ comment.posted_date.strftime('%Y-%m-%d %H:%M:%S') }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No comments available.</p>
+    {% endif %}
+
+    <!-- Likes Received -->
+    <h2>Likes Received</h2>
+    <p>{{ likes_received }}</p>
+   
+
+{% endblock %}

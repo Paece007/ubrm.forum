@@ -34,25 +34,18 @@ def create_app():
     app.config['SESSION_SQLALCHEMY'] = db
     sess.init_app(app)
 
-    logging.debug(f"CSRF Protection enabled: {app.config['WTF_CSRF_ENABLED']}")
-    logging.debug(f"Session type: {app.config['SESSION_TYPE']}")
-    logging.debug(f"Session SQLAlchemy: {app.config['SESSION_SQLALCHEMY']}")
-
     logging.warning(f"CSRF Protection enabled: {app.config['WTF_CSRF_ENABLED']}")
     logging.warning(f"Session type: {app.config['SESSION_TYPE']}")
     logging.warning(f"Session SQLAlchemy: {app.config['SESSION_SQLALCHEMY']}")
 
-    app.logger.info(f"CSRF Protection enabled: {app.config['WTF_CSRF_ENABLED']}")
-    app.logger.info(f"Session type: {app.config['SESSION_TYPE']}")
-    app.logger.info(f"Session SQLAlchemy: {app.config['SESSION_SQLALCHEMY']}")
 
     @app.before_request
     def log_csrf_token():
         token = request.cookies.get('csrf_token')
-        logging.debug(f"CSRF Token from cookie: {token}")
+        logging.warning(f"CSRF Token from cookie: {token}")
         form_token = request.form.get('csrf_token')
-        logging.debug(f"CSRF Token from form: {form_token}")
-        logging.debug(f"Session contents: {session.items()}")
+        logging.warning(f"CSRF Token from form: {form_token}")
+        logging.warning(f"Session contents: {session.items()}")
         if not token:
             logging.warning("CSRF token not found in cookies.")
         if not form_token:

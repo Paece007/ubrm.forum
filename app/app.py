@@ -178,10 +178,14 @@ def dashboard():
     return render_template('dashboard.html')
 
 
-@app.route('/protected')
+@app.route('/profile')
 @login_required
-def protected():
-    return 'Logged in as: ' + str(current_user.id)
+def profile():
+    user = User.query.get(current_user.id)
+    uploads = Upload.query.filter_by(uploaded_by=current_user.id).all()
+    comments = Comment.query.filter_by(user_id=current_user.id).all()
+    likes_received = Like.query.filter_by(user_id=current_user.id).count()
+    return render_template('profile.html', user=user, uploads=uploads, comments=comments, likes_received=likes_received)
 
 @app.route('/lehrveranstaltungen')
 @login_required

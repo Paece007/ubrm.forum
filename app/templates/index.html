@@ -3,11 +3,7 @@
 {% block title %}Index{% endblock %}
 
 {% block content %}
-    <h1>Index: Welcome to the Flask App!</h1>
-    {% if current_user.is_authenticated %}
-        <p>Hi {{ current_user.name }}!</p>
-    {% else %}
-        <p>Please <a href="{{ url_for('login') }}">login</a> to access more features.</p>
-        <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a> now!</p>
-    {% endif %}
+    <h1>Die Secret Sauce fürs UBRM Studium</h1>
+        <p>Bitte <a href="{{ url_for('login') }}">logge dich ein</a> um Lernmaterialien zu sehen</p>
+        <p>Du hast noch keinen Account?<a href="{{ url_for('register') }}">Hier registrieren!</a></p>
 {% endblock %}

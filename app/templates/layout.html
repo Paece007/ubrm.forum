@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,11 +18,11 @@
             </ul>
             <ul>
                 {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('protected') }}">Protected</a></li>
-                    <li><a href="{{ url_for('lehrveranstaltungen') }}">Lehrveranstaltungen</a></li>
-                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <li><a href="{{ url_for('lehrveranstaltungen') }}" data-tooltip="Zeige alle Lehrveranstaltungen an">Lehrveranstaltungen</a></li>
+                    <li><a href="{{ url_for('profile') }}">Profil</a></li>
+                    <li><a href="{{ url_for('logout') }}">Ausloggen</a></li>
                 {% else %}
-                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('login') }}">Einloggen</a></li>
                 {% endif %}
             </ul>
         </nav>

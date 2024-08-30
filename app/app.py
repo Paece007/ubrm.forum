@@ -110,27 +110,8 @@ def download_file(lehrveranstaltung_id, filename):
     response.headers['Content-Disposition'] = f'attachment; filename={filename}'
     return response
 
-def wait_for_csrf_token(timeout=5):
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        print("Checking for CSRF token...")
-        csrf_token = request.cookies.get('csrf_token')
-        if csrf_token:
-            print("CSRF token found:", csrf_token)
-            return csrf_token
-        time.sleep(0.1)  # Wait for 100 milliseconds before checking again
-        print("Waiting for CSRF token...")
-    print("CSRF token not found within timeout.")
-    return None
-
-@app.before_request
-def check_csrf_token():
-    if request.method == "POST":
-        csrf_token = wait_for_csrf_token()
-        form_csrf_token = request.form.get('csrf_token')
-        print("Form CSRF token:", form_csrf_token)
-
 @app.route('/login', methods=['GET', 'POST'])
+@csrf.exempt
 def login():
     app.logger.info("Login request received.")
     if current_user.is_authenticated:
@@ -171,6 +152,7 @@ def login():
 
 
 @app.route('/register', methods=['GET', 'POST'])
+@csrf.exempt
 def register():
     form = RegisterForm()
     if request.method == 'POST':

@@ -116,9 +116,6 @@ def login():
 
     if request.method == 'POST':
         if form.validate_on_submit():
-            app.logger.info("Form validated successfully.")
-            app.logger.debug(f"Form CSRF Token: {form.csrf_token.data}")
-            app.logger.debug(f"Session CSRF Token: {session.get('csrf_token')}")
 
             user = User.query.filter_by(username=form.username.data).first()
             if user:
@@ -131,11 +128,9 @@ def login():
                         
                         
                         if next_page and next_page != url_for('logout'):
-                            app.logger.info(f"Redirecting to next page: {next_page}")
                             flash('You have been logged in.', 'success')
                             return redirect(next_page)
                         else:
-                            app.logger.info("Redirecting to dashboard.")
                             flash('You have been logged in.', 'success')
                             return redirect(url_for('dashboard'))
                     else:
@@ -342,8 +337,10 @@ def logout():
     logout_user()
     session.clear()  # Clear the session to remove all session data, including the CSRF token
     cache.clear()
+    response = make_response(redirect(url_for('login')))
+    response.delete_cookie('session')  # Clear the session cookie
     flash('You have been logged out.', 'success')
-    return redirect(url_for('login'))
+    return response
 
 @app.route('/favicon.ico')
 def favicon():

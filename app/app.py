@@ -64,6 +64,8 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
     return render_template('index.html')
 
 
@@ -100,7 +102,6 @@ def download_file(lehrveranstaltung_id, filename):
     return response
 
 @app.route('/login', methods=['GET', 'POST'])
-@cache.cached(timeout=60)
 def login():
     app.logger.info("Login request received.")
     if current_user.is_authenticated:
@@ -108,9 +109,10 @@ def login():
 
     app.logger.info("Creating login form.")
     form = LoginForm()
+
     if request.method == 'POST':
-        session.clear()
         if form.validate_on_submit():
+            session.clear()
             app.logger.info("Form validated successfully.")
             app.logger.debug(f"Form CSRF Token: {form.csrf_token.data}")
             app.logger.debug(f"Session CSRF Token: {session.get('csrf_token')}")
@@ -177,6 +179,7 @@ def dashboard():
 
 
 @app.route('/profile')
+@cache.cached(timeout=60)
 @login_required
 def profile():
     user = User.query.get(current_user.id)
@@ -186,6 +189,7 @@ def profile():
     return render_template('profile.html', user=user, uploads=uploads, comments=comments, likes_received=likes_received)
 
 @app.route('/lehrveranstaltungen')
+@cache.cached(timeout=60)
 @login_required
 def lehrveranstaltungen():
     app.logger.info("Lehrveranstaltungen request received.")
@@ -195,6 +199,7 @@ def lehrveranstaltungen():
 
 
 @app.route('/lehrveranstaltungen/<encoded_name>', methods=['GET', 'POST'])
+@cache.cached(timeout=60)
 @login_required
 def lv_detail(encoded_name):
     # Decode the URL-encoded name twice
@@ -339,6 +344,7 @@ def logout():
 @app.route('/favicon.ico')
 def favicon():
     response = make_response(send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico'))
+    print("Setting Cache-Control header to 'public, max-age=86400")
     response.headers['Cache-Control'] = 'public, max-age=86400'  # Cache for 1 day
+    print("Cache-Control header set to:", response.headers['Cache-Control'])
     return response
-

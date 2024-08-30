@@ -6,6 +6,7 @@
 
 {% block content %}
 <h1>CSRF Token Error</h1>
+    <p>Könnte es sein dass du dich nicht aufgeloggt hast letztes mal? Bitte, wenn möglch immer Ausloggen, dann sollt's gehen :)</p>
     <p>{{ reason }}</p>
     <h2>Debugging Information</h2>
     <p>CSRF Token from Cookie: {{ request.cookies.get('csrf_token') }}</p>

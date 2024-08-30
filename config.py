@@ -16,3 +16,4 @@ class Config:
     SESSION_TYPE = 'sqlalchemy'
     SESSION_SQLALCHEMY = SQLAlchemy()
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
+    CACHE_TYPE = 'simple'

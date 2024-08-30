@@ -1,5 +1,5 @@
 from flask import Flask, request  # Import the request object
-
+from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
@@ -16,6 +16,7 @@ bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = 'login'
 csrf = CSRFProtect()
+sess=Session()
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
@@ -31,6 +32,9 @@ def create_app():
     bcrypt.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)  # Ensure CSRF protection is enabled globally
+    app.config['SESSION_SQLALCHEMY'] = db
+    sess.init_app(app)
+
     logging.info(f"CSRF Protection enabled: {app.config['WTF_CSRF_ENABLED']}")
 
     @app.before_request

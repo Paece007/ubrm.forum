@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSRF Token Error</title>
+</head>
+<body>
+    <h1>CSRF Token Error</h1>
+    <p>{{ reason }}</p>
+    <h2>Debugging Information</h2>
+    <p>CSRF Token from Cookie: {{ request.cookies.get('csrf_token') }}</p>
+    <p>CSRF Token from Form: {{ request.form.get('csrf_token') }}</p>
+    <p>Request Method: {{ request.method }}</p>
+    <p>Request URL: {{ request.url }}</p>
+</body>
+</html>

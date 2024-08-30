@@ -1,9 +1,9 @@
-from flask import Flask, request  # Import the request object
+from flask import Flask, request, render_template# Import the request object
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, CSRFError
 import logging
 import tempfile
 import os
@@ -40,13 +40,17 @@ def create_app():
     @app.before_request
     def log_csrf_token():
         token = request.cookies.get('csrf_token')
-        logging.info(f"CSRF Token from cookie: {token}")
+        app.logger.info(f"CSRF Token from cookie: {token}")
         form_token = request.form.get('csrf_token')
-        logging.info(f"CSRF Token from form: {form_token}")
+        app.logger.info(f"CSRF Token from form: {form_token}")
         if not token:
-            logging.warning("CSRF token not found in cookies.")
+            app.logger.warning("CSRF token not found in cookies.")
         if not form_token:
-            logging.warning("CSRF token not found in form.")
+            app.logger.warning("CSRF token not found in form.")
+
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        return render_template('csrf_error.html', reason=e.description), 400
 
     with app.app_context():
         db.create_all()

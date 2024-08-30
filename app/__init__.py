@@ -45,10 +45,8 @@ def create_app():
         form_token = request.form.get('csrf_token')
         logging.info(f"CSRF Token from form: {form_token}")
         logging.info(f"Session contents: {session.items()}")
-        if not token:
-            logging.warning("CSRF token not found in cookies.")
-        if not form_token:
-            logging.warning("CSRF token not found in form.")
+        if not token != form_token:
+            logging.warning("CSRF token mismatch")
 
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):

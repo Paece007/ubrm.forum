@@ -1,16 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Internal Server Error</title>
-</head>
-<body>
-    <h1>Internal Server Error</h1>
+{% extends "layout.html" %}
+
+
+{% block title %}Internal Server Error{% endblock %}
+
+{% block content %}
+<h1>Internal Server Error</h1>
     <p>{{ error }}</p>
-    <h2>Debugging Information</h2>
+<h2>Debugging Information</h2>
     <p>Request Method: {{ request.method }}</p>
     <p>Request URL: {{ request.url }}</p>
     <p>Session Contents: {{ session }}</p>
-</body>
-</html>
+{% endblock %}

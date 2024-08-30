@@ -1,7 +1,5 @@
-# app/config.py
-import secrets
 import os
-from datetime import timedelta  # Add this line to import the timedelta class from the datetime module
+from datetime import timedelta
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -13,7 +11,7 @@ class Config:
     WTF_CSRF_ENABLED = True
     CSRF_USE_SESSIONS = True
     CSRF_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_TYPE = 'sqlalchemy'

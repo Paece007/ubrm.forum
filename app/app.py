@@ -343,3 +343,21 @@ def favicon():
     response = make_response(send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico'))
     response.headers['Cache-Control'] = 'public, max-age=86400'  # Cache for 1 day
     return response
+
+@app.route('/set_csrf_token')
+def set_csrf_token():
+    token = generate_csrf()
+    response = make_response("CSRF token set")
+    response.set_cookie('csrf_token', token)
+    return response
+
+@app.route('/test_csrf', methods=['GET', 'POST'])
+def test_csrf():
+    if request.method == 'POST':
+        return "POST request received and CSRF token validated."
+    return '''
+        <form method="POST" action="/test_csrf">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Submit</button>
+        </form>
+    '''

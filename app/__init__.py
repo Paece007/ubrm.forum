@@ -9,9 +9,9 @@ import tempfile
 from flask_caching import Cache
 
 
-from config import Config
+from config import Config, db
 
-db = SQLAlchemy()
+
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = 'login'
@@ -45,10 +45,12 @@ def create_app():
 
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):
+        app.logger.error(f"CSRF error: {e.description}")
         return render_template('csrf_error.html', reason=e.description), 400
     
     @app.errorhandler(500)
     def handle_internal_server_error(e):
+        app.logger.error(f"Internal server error: {str(e)}")
         return render_template('500_error.html', error=str(e)), 500
 
     with app.app_context():

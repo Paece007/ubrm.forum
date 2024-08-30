@@ -105,26 +105,6 @@ def download_file(lehrveranstaltung_id, filename):
     response.headers['Content-Disposition'] = f'attachment; filename={filename}'
     return response
 
-@app.before_request
-def log_csrf_token():
-    if request.path == url_for('login'):
-        logout_user()
-        session.clear()
-        cache.clear()
-        form = LoginForm()
-        timeout = 5  # Timeout in seconds
-        start_time = time.time()
-        app.logger.warning("Starting CSRF token update.")
-        while form.csrf_token.data == session.get('csrf_token'):
-            if time.time() - start_time > timeout:
-                app.logger.warning("CSRF token update timeout.")
-                break
-            
-            # Wait for the CSRF token to be updated
-            app.logger.warning("Waiting for CSRF token to be updated...")
-            time.sleep(0.1)  # Sleep for 100 milliseconds
-        app.logger.info("CSRF token updated.")
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     app.logger.info("Login request received.")

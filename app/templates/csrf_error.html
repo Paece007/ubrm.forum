@@ -7,10 +7,12 @@
 {% block content %}
 <h1>CSRF Token Error</h1>
 
-    <p>There was an error with the CSRF token. Please try refreshing the page.</p>
+    <p>Du wirst gleich weitergleitet</p>
     <script>
         // Automatically refresh the page
-        location.reload(true);
+        setTimeout(function() {
+            window.location.reload(true);
+        }, 2000);
     </script>
 
     <p>{{ reason }}</p>

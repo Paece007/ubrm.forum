@@ -70,6 +70,11 @@ def load_user(user_id):
 def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
+    logout_user()
+    session.clear()  # Clear the session to remove all session data, including the CSRF token
+    cache.clear()
+    response = make_response(redirect(url_for('login')))
+    response.delete_cookie('csrf_token')  # Clear the session cookie
     return render_template('index.html')
 
 
@@ -104,6 +109,26 @@ def download_file(lehrveranstaltung_id, filename):
     response = make_response(send_file(file_data, as_attachment=True, download_name=filename))
     response.headers['Content-Disposition'] = f'attachment; filename={filename}'
     return response
+
+def wait_for_csrf_token(timeout=5):
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        print("Checking for CSRF token...")
+        csrf_token = request.cookies.get('csrf_token')
+        if csrf_token:
+            print("CSRF token found:", csrf_token)
+            return csrf_token
+        time.sleep(0.1)  # Wait for 100 milliseconds before checking again
+        print("Waiting for CSRF token...")
+    print("CSRF token not found within timeout.")
+    return None
+
+@app.before_request
+def check_csrf_token():
+    if request.method == "POST":
+        csrf_token = wait_for_csrf_token()
+        form_csrf_token = request.form.get('csrf_token')
+        print("Form CSRF token:", form_csrf_token)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

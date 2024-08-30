@@ -7,11 +7,10 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
+    SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = True
-    WTF_CSRF_SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
     CSRF_USE_SESSIONS = True
     CSRF_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = False

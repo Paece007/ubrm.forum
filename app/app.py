@@ -340,11 +340,6 @@ def logout():
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico')
-
-@app.route('/set_csrf_token')
-def set_csrf_token():
-    token = generate_csrf()
-    response = make_response("CSRF token set")
-    response.set_cookie('csrf_token', token)
+    response = make_response(send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico'))
+    response.headers['Cache-Control'] = 'public, max-age=86400'  # Cache for 1 day
     return response

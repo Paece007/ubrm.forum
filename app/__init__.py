@@ -1,9 +1,9 @@
-from flask import Flask, request, render_template, session # Import the request object
+from flask import Flask, request, render_template, session, make_response
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask_wtf.csrf import CSRFProtect, CSRFError, generate_csrf
 import logging
 import tempfile
 
@@ -15,7 +15,8 @@ bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = 'login'
 csrf = CSRFProtect()
-sess=Session()
+sess = Session()  # Create an instance of the Session class
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
@@ -41,15 +42,18 @@ def create_app():
 
     @app.before_request
     def log_csrf_token():
-        token = request.cookies.get('csrf_token')
-        logging.warning(f"CSRF Token from cookie: {token}")
-        form_token = request.form.get('csrf_token')
-        logging.warning(f"CSRF Token from form: {form_token}")
-        logging.warning(f"Session contents: {session.items()}")
-        if not token:
-            logging.warning("CSRF token not found in cookies.")
-        if not form_token:
-            logging.warning("CSRF token not found in form.")
+        if request.method == 'POST':
+            token = request.cookies.get('csrf_token')
+            form_token = request.form.get('csrf_token')
+            if token != form_token:
+                logging.warning(f"CSRF Token from cookie: {token}")
+                logging.warning(f"CSRF Token from form: {form_token}")
+                logging.warning(f"Session contents: {session.items()}")
+            if not token:
+                logging.warning("CSRF token not found in cookies.")
+            if not form_token:
+                logging.warning("CSRF token not found in form.")
+
 
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):

@@ -43,21 +43,6 @@ def create_app():
     logging.warning(f"Session SQLAlchemy: {app.config['SESSION_SQLALCHEMY']}")
 
 
-    @app.before_request
-    def log_csrf_token():
-        if request.method == 'POST':
-            token = request.cookies.get('csrf_token')
-            form_token = request.form.get('csrf_token')
-            if token != form_token:
-                logging.warning(f"CSRF Token from cookie: {token}")
-                logging.warning(f"CSRF Token from form: {form_token}")
-                logging.warning(f"Session contents: {session.items()}")
-            if not token:
-                logging.warning("CSRF token not found in cookies.")
-            if not form_token:
-                logging.warning("CSRF token not found in form.")
-
-
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):
         return render_template('csrf_error.html', reason=e.description), 400

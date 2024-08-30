@@ -15,6 +15,9 @@ from io import BytesIO
 import os
 from flask_wtf.csrf import generate_csrf
 from config import Config
+from functools import wraps
+from werkzeug.exceptions import BadRequest
+
 
 
 print("Configuration imported. (App)")
@@ -101,6 +104,12 @@ def download_file(lehrveranstaltung_id, filename):
     response.headers['Content-Disposition'] = f'attachment; filename={filename}'
     return response
 
+@app.before_request
+def log_csrf_token():
+    if request.path == url_for('login'):
+        logout_user()
+        session.clear()
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     app.logger.info("Login request received.")
@@ -112,7 +121,6 @@ def login():
 
     if request.method == 'POST':
         if form.validate_on_submit():
-            session.clear()
             app.logger.info("Form validated successfully.")
             app.logger.debug(f"Form CSRF Token: {form.csrf_token.data}")
             app.logger.debug(f"Session CSRF Token: {session.get('csrf_token')}")

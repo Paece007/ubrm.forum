@@ -153,16 +153,16 @@ def register():
     form = RegisterForm()
     if request.method == 'POST':
         if form.validate_on_submit():
+            username = form.username.data
             password = form.password.data
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
             print(f"Hashed password: {hashed_password}")
-
-            # Checking a password
-            is_correct = bcrypt.check_password_hash(hashed_password, password)
-            print(f"Password is correct: {is_correct}")
-
-
-            new_user = User(username=form.username.data, password=hashed_password)
+            
+            if User.query.filter_by(username=username).first():
+                flash('Username already exists. Please choose a different one.', 'danger')
+                return redirect(url_for('register'))
+            
+            new_user = User(username=username, password=hashed_password)
             db.session.add(new_user)
             db.session.commit()
             return redirect(url_for('login'))

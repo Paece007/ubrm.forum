@@ -21,12 +21,10 @@ print("Configuration imported. (App)")
 
 load_dotenv()
 
-from app import create_app, login_manager, db, bcrypt, csrf
+from app import create_app, login_manager, db, bcrypt, csrf, cache
 from app.models import User, RegisterForm, LoginForm, Lehrveranstaltung, UploadFileForm, Upload, Like, CommentForm, Comment
 
 app = create_app()
-if __name__ == '__main__':
-    app.run(debug=True)
 
 app.logger.info("App started successfully.")
 
@@ -102,6 +100,7 @@ def download_file(lehrveranstaltung_id, filename):
     return response
 
 @app.route('/login', methods=['GET', 'POST'])
+@cache.cached(timeout=60)
 def login():
     app.logger.info("Login request received.")
     if current_user.is_authenticated:
@@ -113,8 +112,10 @@ def login():
         session.clear()
         if form.validate_on_submit():
             app.logger.info("Form validated successfully.")
+            app.logger.debug(f"Form CSRF Token: {form.csrf_token.data}")
+            app.logger.debug(f"Session CSRF Token: {session.get('csrf_token')}")
+
             user = User.query.filter_by(username=form.username.data).first()
-            app.logger.info(f"User: {user}")
             if user:
                 try:
                     if bcrypt.check_password_hash(user.password, form.password.data):
@@ -340,3 +341,4 @@ def favicon():
     response = make_response(send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico'))
     response.headers['Cache-Control'] = 'public, max-age=86400'  # Cache for 1 day
     return response
+

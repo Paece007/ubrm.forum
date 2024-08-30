@@ -6,6 +6,7 @@ from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect, CSRFError, generate_csrf
 import logging
 import tempfile
+from flask_caching import Cache
 
 
 from config import Config
@@ -16,6 +17,7 @@ login_manager = LoginManager()
 login_manager.login_view = 'login'
 csrf = CSRFProtect()
 sess = Session()  # Create an instance of the Session class
+cache = Cache()  # Create an instance of the Cache class
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +36,7 @@ def create_app():
     csrf.init_app(app)  # Ensure CSRF protection is enabled globally
     app.config['SESSION_SQLALCHEMY'] = db
     sess.init_app(app)
+    cache.init_app(app)
 
     logging.warning(f"CSRF Protection enabled: {app.config['WTF_CSRF_ENABLED']}")
     logging.warning(f"Session type: {app.config['SESSION_TYPE']}")
@@ -43,11 +46,6 @@ def create_app():
     @app.before_request
     def log_csrf_token():
         if request.method == 'POST':
-            print("Cookies: ", request.cookies)
-            print("Form: ", request.form)
-            print("Session: ", session.items())
-            print("Headers: ", request.headers)
-
             token = request.cookies.get('csrf_token')
             form_token = request.form.get('csrf_token')
             if token != form_token:

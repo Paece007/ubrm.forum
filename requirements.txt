@@ -6,3 +6,4 @@ flask_wtf
 flask-session
 python-dotenv
 psycopg2-binary
+flask_caching

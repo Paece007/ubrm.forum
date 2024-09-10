@@ -276,7 +276,7 @@ def has_user_liked(upload_id, user_id):
 @login_required
 def upload_detail(encoded_name, upload_id):
     app.logger.warning("Encoded name: %s", encoded_name)
-    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(encoded_name)).first()
+    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(unquote(encoded_name))).first()
     app.logger.warning("Lehrveranstaltung = %s", lehrveranstaltung)
     upload = Upload.query.get_or_404(upload_id)
     form = CommentForm()

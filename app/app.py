@@ -274,12 +274,21 @@ def lv_detail(encoded_name):
 
     uploads = Upload.query.filter_by(Lehrveranstaltung_id=lehrveranstaltung.id).all()
 
+    # Perform the join query
+    uploads_with_usernames = db.session.query(Upload, User.username).join(User, Upload.uploaded_by == User.id).filter(Upload.Lehrveranstaltung_id == lehrveranstaltung.id).all()
+
+    # Convert buffer data to base64 and print the uploads
+    for upload, username in uploads_with_usernames:
+        upload.data_base64 = base64.b64encode(upload.data).decode('utf-8')
+        print(f"Filename: {upload.filename}, Uploaded by: {username}")
+        # Access other attributes of the upload object as needed
+
      # Convert buffer data to base64
     for upload in uploads:
         upload.data_base64 = base64.b64encode(upload.data).decode('utf-8')
 
     print(uploads)
-    return render_template('lv_detail.html', lehrveranstaltung=lehrveranstaltung, uploads=uploads, form=form)
+    return render_template('lv_detail.html', lehrveranstaltung=lehrveranstaltung, uploads=uploads_with_usernames, form=form)
 
 
 

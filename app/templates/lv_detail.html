@@ -12,10 +12,10 @@
 
     <h2>{{ lehrveranstaltung.name }} Uploads</h2>
     <div>
-        {% for upload in uploads %}
+        {% for upload, username in uploads %}
             <article>
                 <a href="{{ url_for('upload_detail', encoded_name=lehrveranstaltung.encoded_name, upload_id=upload.id) }}">{{ upload.filename }}</a>
-                <p>Uploaded by: {{ upload.uploaded_by }} on {{ upload.upload_date }}</p>
+                <p>Hochgeladen von: {{ username }} am {{ upload.upload_date.strftime('%Y-%m-%d') }} um {{ upload.upload_date.strftime('%H:%M:%S') }}</p>
                 <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span></p>
                 <button onclick="likeUpload({{ upload.id }})">Like</button>
                 {% for key, value in mime_type_map.items() %}
@@ -30,7 +30,8 @@
             </article>
         {% endfor %}
     </div>
-    <h2>Upload a new file</h2>
+
+    <h3>Upload a new file</h3>
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         {{ form.file.label }} {{ form.file() }}

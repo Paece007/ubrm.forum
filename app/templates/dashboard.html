@@ -3,10 +3,13 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <h1>Dashboard</h1>
+    <h1>UBRM-Forum</h1>
+    <h2>Dashboard</h2>
 
     <p>Willkommen beim Geheimtreff für deinen Studienerfolg, {{ current_user.username }}! ;)</p>
-
+    <a href="{{ url_for('lehrveranstaltungen') }}">
+        <button>Alle Lehrveranstaltungen</button>
+    </a>
     <p><a href="{{ url_for('logout') }}">Logout</a></p>
 
 {% endblock %}

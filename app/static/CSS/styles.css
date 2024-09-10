@@ -27,3 +27,14 @@
       flex: 1 1 100%;
     }
   }
+
+body {
+  padding: 1em;
+}
+main{
+  padding: 1em;
+}
+nav{
+  margin-left: 1em;
+  margin-right: 1em;
+}

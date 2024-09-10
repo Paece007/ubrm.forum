@@ -3,7 +3,8 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-    <h1>Login</h1>
+    <h1>UBRM Forum</h1>
+    <h2>Login</h2>
     <form method="POST">
         <fieldset class="grid">
             {{ form.hidden_tag() }}
@@ -12,7 +13,7 @@
             {{ form.submit }}
         </fieldset>
     </form>
-    <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a> now!</p>
+    <p>Du hast noch keinen Account? Jetzt <a href="{{ url_for('register') }}">Registrieren</a>!</p>
 
     <script>
         document.getElementById('registerForm').onsubmit = function(event) {

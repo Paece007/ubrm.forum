@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <title>{% block title %}Forum{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/pico/css/pico.classless.jade.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/pico/css/pico.jade.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -22,11 +22,13 @@
             </ul>
             <ul>
                 {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('feedback') }}">Feedback ❤️</a></li>
                     <li><a href="{{ url_for('lehrveranstaltungen') }}" data-tooltip="Zeige alle Lehrveranstaltungen an">Lehrveranstaltungen</a></li>
                     <li><a href="{{ url_for('profile') }}">Profil</a></li>
                     <li><a href="{{ url_for('logout') }}">Ausloggen</a></li>
                 {% else %}
                     <li><a href="{{ url_for('login') }}">Einloggen</a></li>
+                    <li><a href="{{ url_for('register') }}">Registrieren</a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -44,8 +46,9 @@
         {% block content %}{% endblock %}
     </main>
     <footer>
-        <button id="confettiButton">Celebrate!</button>
-        <!-- Add the confetti script -->
+        {% if current_user.is_authenticated %}
+        <button id="confettiButton" class="secondary">Celebrate!</button>
+        {% endif %}
     <script>
         document.getElementById('confettiButton').addEventListener('click', function() {
             confetti({

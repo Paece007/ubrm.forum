@@ -12,6 +12,20 @@ from io import BytesIO
 import os
 import time
 import sys
+import base64
+
+MIME_TYPES = {
+    '.pdf': 'application/pdf',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.txt': 'text/plain',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.doc': 'application/msword'
+}
+
 
 
 
@@ -220,6 +234,17 @@ def lv_detail(encoded_name):
         form.Lehrveranstaltung_id.data = lehrveranstaltung_id
         form.uploaded_by.data = current_user.username
         form.upload_date.data = datetime.now()
+
+        # Get the file extension
+        file_extension = form.file.data.filename.lower().rsplit('.', 1)[-1]
+        file_extension = f'.{file_extension}'
+
+        # Set the MIME type based on the file extension
+        form.mime_type.data = MIME_TYPES.get(file_extension, 'application/octet-stream')
+        if form.mime_type.data == 'application/octet-stream':
+            app.logger.warning(f"Unknown file type for extension: {file_extension}")
+        
+        print(f"MIME type: {form.mime_type.data}")
         if form.validate_on_submit():
             print("Form validated successfully.")
             f = form.file.data
@@ -233,7 +258,8 @@ def lv_detail(encoded_name):
                 Lehrveranstaltung_id=lehrveranstaltung_id,
                 uploaded_by=current_user.id,
                 upload_date=datetime.now(),
-                data=file_content
+                data=file_content,
+                mime_type=form.mime_type.data
             )
             db.session.add(upload)
             db.session.commit()
@@ -247,6 +273,11 @@ def lv_detail(encoded_name):
 
 
     uploads = Upload.query.filter_by(Lehrveranstaltung_id=lehrveranstaltung.id).all()
+
+     # Convert buffer data to base64
+    for upload in uploads:
+        upload.data_base64 = base64.b64encode(upload.data).decode('utf-8')
+
     print(uploads)
     return render_template('lv_detail.html', lehrveranstaltung=lehrveranstaltung, uploads=uploads, form=form)
 
@@ -275,13 +306,13 @@ def has_user_liked(upload_id, user_id):
 @app.route('/lehrveranstaltungen/<encoded_name>/<upload_id>', methods=['GET', 'POST'])
 @login_required
 def upload_detail(encoded_name, upload_id):
-    app.logger.warning("Encoded name: %s", encoded_name)
+    app.logger.info("Encoded name: %s", encoded_name)
     lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(unquote(encoded_name))).first()
-    app.logger.warning("Lehrveranstaltung = %s", lehrveranstaltung)
+    app.logger.info("Lehrveranstaltung = %s", lehrveranstaltung)
     upload = Upload.query.get_or_404(upload_id)
     form = CommentForm()
     comments = db.session.query(Comment, User.username).filter(Comment.upload_id == upload_id).join(User, Comment.user_id == User.id).all()
-    app.logger.warning("Lehrveranstaltungs-Id = %s", lehrveranstaltung.id)
+    app.logger.info("Lehrveranstaltungs-Id = %s", lehrveranstaltung.id)
     return render_template('upload_detail.html', lehrveranstaltung=lehrveranstaltung, upload=upload, comments=comments, form=form)
 
 @app.route('/comment/<upload_id>', methods=['POST'])

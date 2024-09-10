@@ -66,6 +66,7 @@ class UploadFileForm(FlaskForm):
     Lehrveranstaltung_id = HiddenField('Lehrveranstaltung_id', validators=[DataRequired()])
     uploaded_by = HiddenField('Uploaded_by', validators=[DataRequired()])
     upload_date = HiddenField('Upload_date', validators=[DataRequired()])
+    mime_type = HiddenField('Mime_type', validators=[DataRequired()])
     submit = SubmitField('Upload')
 
 class Upload(db.Model):
@@ -76,6 +77,7 @@ class Upload(db.Model):
     uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     upload_date = db.Column(db.DateTime, default=datetime)
     likes = db.Column(db.Integer, default=0)
+    mime_type = db.Column(db.String(255), nullable=False)
 
     def __repr__(self):
         return f'<Upload {self.filename}>'

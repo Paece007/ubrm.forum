@@ -2,6 +2,14 @@
 {% block title %}{{ lehrveranstaltung.name }}{% endblock %}
 {% block content %}
 
+{% set mime_type_map = {
+    'image/': '<img src="data:{mime_type};base64,{data_base64}" alt="{filename}" style="max-width: 200px;">',
+    'application/pdf': '<embed src="data:{mime_type};base64,{data_base64}" type="application/pdf">',
+    'text/plain': '<pre>{data}</pre>',
+    'application/msword': '<iframe src="https://view.officeapps.live.com/op/embed.aspx?src=data:{mime_type};base64,{data_base64}"></iframe>',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '<iframe src="https://view.officeapps.live.com/op/embed.aspx?src=data:{mime_type};base64,{data_base64}"></iframe>'
+} %}
+
     <h2>{{ lehrveranstaltung.name }} Uploads</h2>
     <div>
         {% for upload in uploads %}
@@ -10,7 +18,15 @@
                 <p>Uploaded by: {{ upload.uploaded_by }} on {{ upload.upload_date }}</p>
                 <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span></p>
                 <button onclick="likeUpload({{ upload.id }})">Like</button>
-                <p>DEBUGGING: Upload_id = {{upload.id}}</p>
+                {% for key, value in mime_type_map.items() %}
+                    {% if upload.mime_type.startswith(key) %}
+                        {% if key == 'text/plain' %}
+                            {{ value.format(mime_type=upload.mime_type, data_base64=upload.data_base64, filename=upload.filename, data=upload.data.decode('utf-8'))|safe }}
+                        {% else %}
+                            {{ value.format(mime_type=upload.mime_type, data_base64=upload.data_base64, filename=upload.filename)|safe }}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
             </article>
         {% endfor %}
     </div>

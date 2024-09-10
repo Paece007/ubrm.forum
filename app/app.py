@@ -20,7 +20,7 @@ print("Configuration imported. (App)")
 load_dotenv()
 
 from app import create_app, login_manager, db, bcrypt, csrf, cache
-from app.models import User, RegisterForm, LoginForm, Lehrveranstaltung, UploadFileForm, Upload, Like, CommentForm, Comment, FeedbackForm
+from app.models import User, RegisterForm, LoginForm, Lehrveranstaltung, UploadFileForm, Upload, Like, CommentForm, Comment
 
 app = create_app()
 
@@ -198,7 +198,6 @@ def lehrveranstaltungen():
 
 
 @app.route('/lehrveranstaltungen/<encoded_name>', methods=['GET', 'POST'])
-@cache.cached(timeout=60)
 @login_required
 def lv_detail(encoded_name):
     # Decode the URL-encoded name twice
@@ -351,18 +350,7 @@ def favicon():
     print("Cache-Control header set to:", response.headers['Cache-Control'])
     return response
 
-@app.route('/feedback', methods=['GET', 'POST'])
+@app.route('/feedback')
 def feedback():
-    form=FeedbackForm()
-
-    if request.method == 'POST':
-        if form.validate_on_submit():
-
-            flash('Feedback sent successfully.', 'success')
-            return redirect(url_for('feedback'))
-        else:
-            flash('Invalid input. Please try again.', 'danger')
-            return render_template('feedback.html', form=form)
-        
-    return render_template('feedback.html', form=form)
+    return render_template('feedback.html')
 

@@ -45,6 +45,12 @@ class CommentForm(FlaskForm):
     upload_date = HiddenField('Upload_date', validators=[DataRequired()])    
     submit = SubmitField('Post Comment')
 
+class FeedbackForm(FlaskForm):
+    content = TextAreaField('Feedback', validators=[DataRequired()])
+    uploaded_by = HiddenField('Uploaded_by', validators=[DataRequired()])
+    upload_date = HiddenField('Upload_date', validators=[DataRequired()])
+    submit = SubmitField('Send Feedback')
+
 
 class Lehrveranstaltung(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -98,3 +104,9 @@ class Comment(db.Model):
 
     def __repr__(self):
         return f'<Comment {self.content[:20]}>'
+    
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    upload_date = db.Column(db.DateTime, default=datetime)

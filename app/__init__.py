@@ -9,6 +9,7 @@ import tempfile
 from flask_caching import Cache
 
 
+
 from config import Config, db
 
 
@@ -18,6 +19,7 @@ login_manager.login_view = 'login'
 csrf = CSRFProtect()
 sess = Session()  # Create an instance of the Session class
 cache = Cache()  # Create an instance of the Cache class
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

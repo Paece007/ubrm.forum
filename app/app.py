@@ -178,7 +178,6 @@ def dashboard():
 
 
 @app.route('/profile')
-@cache.cached(timeout=60)
 @login_required
 def profile():
     user = User.query.get(current_user.id)
@@ -276,10 +275,13 @@ def has_user_liked(upload_id, user_id):
 @app.route('/lehrveranstaltungen/<encoded_name>/<upload_id>', methods=['GET', 'POST'])
 @login_required
 def upload_detail(encoded_name, upload_id):
+    app.logger.warning("Encoded name: %s", encoded_name)
     lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(encoded_name)).first()
+    app.logger.warning("Lehrveranstaltung = %s", lehrveranstaltung)
     upload = Upload.query.get_or_404(upload_id)
     form = CommentForm()
     comments = db.session.query(Comment, User.username).filter(Comment.upload_id == upload_id).join(User, Comment.user_id == User.id).all()
+    app.logger.warning("Lehrveranstaltungs-Id = %s", lehrveranstaltung.id)
     return render_template('upload_detail.html', lehrveranstaltung=lehrveranstaltung, upload=upload, comments=comments, form=form)
 
 @app.route('/comment/<upload_id>', methods=['POST'])

@@ -45,7 +45,6 @@
     </main>
     <footer>
         <button id="confettiButton">Celebrate!</button>
-        <button id="growTreeButton">Grow a Tree!</button>
         <!-- Add the confetti script -->
     <script>
         document.getElementById('confettiButton').addEventListener('click', function() {
@@ -54,18 +53,6 @@
                 spread: 70,
                 origin: { y: 0.6 }
             });
-        });
-    </script>
-    <style>
-        
-    </style>
-    <script>
-        document.getElementById('growTreeButton').addEventListener('click', function() {
-            const tree = document.createElement('div');
-            tree.classList.add('tree');
-            tree.style.left = Math.random() * 100 + 'vw';
-            tree.style.top = Math.random() * 100 + 'vh';
-            document.body.appendChild(tree);
         });
     </script>
         <p>&copy; 2024  Philipp Wiederkehr</p>

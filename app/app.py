@@ -106,7 +106,6 @@ def download_file(lehrveranstaltung_id, filename):
     return response
 
 @app.route('/login', methods=['GET', 'POST'])
-@csrf.exempt
 def login():
     app.logger.info("Login request received.")
     if current_user.is_authenticated:
@@ -147,7 +146,6 @@ def login():
 
 
 @app.route('/register', methods=['GET', 'POST'])
-@csrf.exempt
 def register():
     form = RegisterForm()
     if request.method == 'POST':

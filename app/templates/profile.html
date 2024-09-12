@@ -5,29 +5,45 @@
 {% block content %}
     <h1>Profil</h1>
 
+    
     <!-- User Information -->
     <h2>Benutzer Information</h2>
     <p><strong>Username:</strong> {{ user.username }}</p>
     <p><strong>Email:</strong> {{ user.email }}</p>
     <p><strong>Beigetreten:</strong> {{ user.joined.strftime('%Y-%m-%d') }}</p>
+    
 
+    
     <!-- Uploads -->
     <h2>Uploads</h2>
     {% if uploads %}
-        <ul>
-        {% for upload in uploads %}
-            <li>
-                <strong>Titel:</strong> {{ upload.filename }}<br>
-                <strong>Lehrveranstaltung:</strong> {{ upload.Lehrveranstaltung_id }}<br>
-                <strong>Hochgeladen:</strong> {{ upload.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
+    <table>
+        <thead>
+          <tr>
+            <th scope="col">Titel</th>
+            <th scope="col">Lehrveranstaltung</th>
+            <th scope="col">Hochgeladen</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for upload, encoded_name in uploads %}
+          <tr>
+            <th scope="row"><a href="{{ url_for('upload_detail', encoded_name=encoded_name, upload_id=upload.id) }}">{{ upload.filename }}</a></th>
+            <td>{{ upload.Lehrveranstaltung_id }}</td>
+            <td>{{ upload.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="grid">
         <p>Keine Uploads</p>
+      </div>
     {% endif %}
+    
 
     <!-- Comments -->
+    
     <h2>Comments</h2>
     {% if comments %}
         <ul>
@@ -41,10 +57,16 @@
     {% else %}
         <p>Keine Kommentare</p>
     {% endif %}
+    
 
+    
     <!-- Likes Received -->
     <h2>Likes Received</h2>
-    <p> Muss noch eingearbeitet werden...</p>
-   
+    {% if likes_received %}
+    <kbd>{{ likes_received }}</kbd>
+    {% else %}
+        <p>Keine Likes erhalten</p>
+    {% endif %}
+    
 
 {% endblock %}

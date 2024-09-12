@@ -13,10 +13,15 @@
     <h2>{{ lehrveranstaltung.name }} Uploads</h2>
     <div>
         {% for upload, username in uploads %}
-            <article>
+            <article id="upload-{{upload.id}}">
                 <a href="{{ url_for('upload_detail', encoded_name=lehrveranstaltung.encoded_name, upload_id=upload.id) }}">{{ upload.filename }}</a>
                 <p>Hochgeladen von: {{ username }} am {{ upload.upload_date.strftime('%Y-%m-%d') }} um {{ upload.upload_date.strftime('%H:%M:%S') }}</p>
                 <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span></p>
+                {% if current_user.is_authenticated %}
+                    <p>Debugging: Current user ID: {{current_user.id}} Upload User Id: {{upload.uploaded_by}}</p>
+                    {% if current_user.id == upload.uploaded_by %}
+                    <button onclick="deleteUpload('{{ lehrveranstaltung.encoded_name }}', {{ upload.id }})">Delete</button>                    {% endif %}
+                {% endif %}
                 <button onclick="likeUpload({{ upload.id }})">Like</button>
                 {% for key, value in mime_type_map.items() %}
                     {% if upload.mime_type.startswith(key) %}
@@ -53,6 +58,42 @@
                 document.getElementById(`likes-${uploadId}`).innerText = data.likes;
             } else {
                 alert(data.message);
+            }
+        });
+    }
+
+    function deleteUpload(encodedName, uploadId) {
+        alert(`Deleting upload ${uploadId}`);
+        const uploadelement = document.getElementById(`upload-${uploadId}`);
+
+        if (uploadelement) {
+            uploadelement.style.display = 'none';
+        }
+        fetch(`/delete_upload/${encodedName}/${uploadId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                uploadelement.remove();
+            } else {
+                response.json().then(data => {
+                    alert(data.error);
+                    // Re-add the comment back to the DOM if the request fails
+                    if (uploadelement) {
+                        uploadelement.style.display = 'block';
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Re-add the comment back to the DOM if there's an error
+            if (uploadelement) {
+                uploadelement.style.display = 'block';
             }
         });
     }

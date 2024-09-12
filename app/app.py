@@ -195,7 +195,9 @@ def dashboard():
 @login_required
 def profile():
     user = User.query.get(current_user.id)
-    uploads = Upload.query.filter_by(uploaded_by=current_user.id).all()
+    #uploads = Upload.query.filter_by(uploaded_by=current_user.id).all()
+    uploads = db.session.query(Upload, Lehrveranstaltung.encoded_name).join(Lehrveranstaltung, Upload.Lehrveranstaltung_id == Lehrveranstaltung.id).filter(Upload.uploaded_by == current_user.id).all()
+
     comments = Comment.query.filter_by(user_id=current_user.id).all()
     likes_received = Like.query.filter_by(user_id=current_user.id).count()
     return render_template('profile.html', user=user, uploads=uploads, comments=comments, likes_received=likes_received)
@@ -395,4 +397,25 @@ def favicon():
 @app.route('/feedback')
 def feedback():
     return render_template('feedback.html')
+
+@app.route('/delete_upload/<encoded_name>/<upload_id>', methods=['DELETE'])
+@login_required
+def delete_upload(encoded_name, upload_id):
+    lehrveranstaltung = Lehrveranstaltung.query.filter_by(name=unquote(unquote(encoded_name))).first()
+    try:
+        upload = Upload.query.filter_by(id=upload_id).first()
+    except Exception as e:
+        app.logger.error(f"Error querying upload {upload_id}: {e}")
+        return jsonify({'error': 'Internal Server Error'}), 500
+    if upload.uploaded_by != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    try:
+        db.session.delete(upload)
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        app.logger.error(f"Error deleting upload {upload_id}: {e}")
+        db.session.rollback()
+        return jsonify({'error': 'Internal Server Error'}), 500
 

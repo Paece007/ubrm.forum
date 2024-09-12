@@ -22,7 +22,7 @@
             </ul>
             <ul>
                 {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('feedback') }}">Feedback ❤️</a></li>
+                    <li><a href="{{ url_for('feedback') }}" data-tooltip="Wir freuen uns über alles!">Feedback ❤️</a></li>
                     <li><a href="{{ url_for('lehrveranstaltungen') }}" data-tooltip="Zeige alle Lehrveranstaltungen an">Lehrveranstaltungen</a></li>
                     <li><a href="{{ url_for('profile') }}">Profil</a></li>
                     <li><a href="{{ url_for('logout') }}">Ausloggen</a></li>
@@ -47,7 +47,7 @@
     </main>
     <footer>
         {% if current_user.is_authenticated %}
-        <button id="confettiButton" class="secondary">Celebrate!</button>
+        <button id="confettiButton" class="contrast">Celebrate!</button>
         {% endif %}
     <script>
         document.getElementById('confettiButton').addEventListener('click', function() {

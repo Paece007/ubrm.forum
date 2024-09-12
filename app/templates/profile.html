@@ -9,13 +9,13 @@
     <!-- User Information -->
     <h2>Benutzer Information</h2>
     <p><strong>Username:</strong> {{ user.username }}</p>
-    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Email:</strong> In arbeit...{{ user.email }}</p>
     <p><strong>Beigetreten:</strong> {{ user.joined.strftime('%Y-%m-%d') }}</p>
     
 
     
     <!-- Uploads -->
-    <h2>Uploads</h2>
+    <h2>Deine Uploads</h2>
     {% if uploads %}
     <table>
         <thead>
@@ -61,7 +61,7 @@
 
     
     <!-- Likes Received -->
-    <h2>Likes Received</h2>
+    <h2>Likes Erhalten</h2>
     {% if likes_received %}
     <kbd>{{ likes_received }}</kbd>
     {% else %}

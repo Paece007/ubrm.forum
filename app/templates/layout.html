@@ -21,6 +21,7 @@
                 {% endif %}
             </ul>
             <ul>
+                <button class="menu-button" onclick="toggleMenu()">☰</button>
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('feedback') }}" data-tooltip="Wir freuen uns über alles!">Feedback ❤️</a></li>
                     <li><a href="{{ url_for('lehrveranstaltungen') }}" data-tooltip="Zeige alle Lehrveranstaltungen an">Lehrveranstaltungen</a></li>
@@ -28,7 +29,7 @@
                     <li><a href="{{ url_for('logout') }}">Ausloggen</a></li>
                 {% else %}
                     <li><a href="{{ url_for('login') }}">Einloggen</a></li>
-                    <li><a href="{{ url_for('register') }}">Registrieren</a></li>
+                    <li><a href="{{ url_for('register') }}" data-tooltip="Neu hier? Hier entlang :)">Registrieren</a></li>
                 {% endif %}
             </ul>
         </nav>

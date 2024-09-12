@@ -3,45 +3,52 @@
 {% block content %}
 
 {% set mime_type_map = {
-    'image/': '<img src="data:{mime_type};base64,{data_base64}" alt="{filename}" style="max-width: 200px;">',
-    'application/pdf': '<embed src="data:{mime_type};base64,{data_base64}" type="application/pdf">',
+    'image/': '<img src="data:{mime_type};base64,{data_base64}" alt="{filename}" style="height: 100%; max-width: 10em;">',
+    'application/pdf': '<iframe src="data:{mime_type};base64,{data_base64}" type="application/pdf" class="pdf-viewer" style="height: 100%; border: 1px solid #ccc; border-radius: 5px;" frameborder="0"></iframe>',
     'text/plain': '<pre>{data}</pre>',
     'application/msword': '<iframe src="https://view.officeapps.live.com/op/embed.aspx?src=data:{mime_type};base64,{data_base64}"></iframe>',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '<iframe src="https://view.officeapps.live.com/op/embed.aspx?src=data:{mime_type};base64,{data_base64}"></iframe>'
 } %}
 
     <h2>{{ lehrveranstaltung.name }} Uploads</h2>
-    <div>
+    <div class="grid">
         {% for upload, username in uploads %}
-            <article id="upload-{{upload.id}}">
-                <a href="{{ url_for('upload_detail', encoded_name=lehrveranstaltung.encoded_name, upload_id=upload.id) }}">{{ upload.filename }}</a>
-                <p>Hochgeladen von: {{ username }} am {{ upload.upload_date.strftime('%Y-%m-%d') }} um {{ upload.upload_date.strftime('%H:%M:%S') }}</p>
+            <article id="upload-{{upload.id}}" class="grid">
+                <div>
+                <a href="{{ url_for('upload_detail', encoded_name=lehrveranstaltung.encoded_name, upload_id=upload.id) }}" data-tooltip="Klick hier um alle Kommentare zu dem Upload zu sehen💬">{{ upload.filename }}</a>
+                <p><small>Hochgeladen von <i>{{ username }}</i> am {{ upload.upload_date.strftime('%Y-%m-%d') }} um {{ upload.upload_date.strftime('%H:%M') }}</small></p>
                 <p>Likes: <span id="likes-{{ upload.id }}">{{ upload.likes }}</span></p>
+                
                 {% if current_user.is_authenticated %}
-                    <p>Debugging: Current user ID: {{current_user.id}} Upload User Id: {{upload.uploaded_by}}</p>
                     {% if current_user.id == upload.uploaded_by %}
-                    <button onclick="deleteUpload('{{ lehrveranstaltung.encoded_name }}', {{ upload.id }})">Delete</button>                    {% endif %}
+                    <button class="contrast" onclick="deleteUpload('{{ lehrveranstaltung.encoded_name }}', {{ upload.id }})" data-tooltip="Dieses Upload inkl. aller Kommentare löschen">Delete</button>
+                    {% endif %}
                 {% endif %}
                 <button onclick="likeUpload({{ upload.id }})">Like</button>
+                </div>
+                <div>
                 {% for key, value in mime_type_map.items() %}
                     {% if upload.mime_type.startswith(key) %}
                         {% if key == 'text/plain' %}
-                            {{ value.format(mime_type=upload.mime_type, data_base64=upload.data_base64, filename=upload.filename, data=upload.data.decode('utf-8'))|safe }}
+                            {{ value.format(mime_type=upload.mime_type, data_base64=upload.data_base64, filename=upload.filename, data=upload.data.decode('utf-8'))|safe}}
                         {% else %}
                             {{ value.format(mime_type=upload.mime_type, data_base64=upload.data_base64, filename=upload.filename)|safe }}
                         {% endif %}
                     {% endif %}
                 {% endfor %}
+                </div>
             </article>
         {% endfor %}
     </div>
-
-    <h3>Upload a new file</h3>
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        {{ form.file.label }} {{ form.file() }}
-        {{ form.submit() }}
-    </form>
+    
+    <article>
+        <h3>Upload a new file</h3>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            {{ form.file.label }} {{ form.file() }}
+            {{ form.submit() }}
+        </form>
+    </article>
 
     <script>
     function likeUpload(uploadId) {

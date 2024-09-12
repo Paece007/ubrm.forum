@@ -23,7 +23,8 @@
             for (let i = 0; i < courses.length; i++) {
                 const course = courses[i];
                 const courseName = course.getElementsByTagName('a')[0].textContent || course.getElementsByTagName('a')[0].innerText;
-                if (courseName.toLowerCase().indexOf(filter) > -1) {
+                const courseId = course.getElementsByTagName('p')[0].textContent || course.getElementsByTagName('p')[0].innerText;
+                if (courseName.toLowerCase().indexOf(filter) > -1 || (courseId && courseId.toLowerCase().indexOf(filter) > -1)) {
                     course.style.display = "";
                 } else {
                     course.style.display = "none";

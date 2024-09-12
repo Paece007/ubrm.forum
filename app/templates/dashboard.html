@@ -8,8 +8,7 @@
 
     <p>Willkommen beim Geheimtreff für deinen Studienerfolg, {{ current_user.username }}! ;)</p>
     <a href="{{ url_for('lehrveranstaltungen') }}">
-        <button>Alle Lehrveranstaltungen</button>
+        <button role="Link">Zu allen UBRM Lehrveranstaltungen</button>
     </a>
-    <p><a href="{{ url_for('logout') }}">Ausloggen</a></p>
 
 {% endblock %}

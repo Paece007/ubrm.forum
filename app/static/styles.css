@@ -1,0 +1,16 @@
+:root {
+    --primary-color: #228B22; /* Dark green */
+    --secondary-color: #8B4513; /* Saddle brown */
+    --accent-color: #006400; /* Dark green */
+    --background-color: #F5F5DC; /* Beige */
+    --text-color: #000000; /* Black */
+}
+.content {
+    position: relative;
+    z-index: 1; /* Ensure content is above the background */
+}
+
+
+
+  
+  

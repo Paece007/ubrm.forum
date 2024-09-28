@@ -21,7 +21,6 @@
                 {% endif %}
             </ul>
             <ul>
-                <button class="menu-button" onclick="toggleMenu()">☰</button>
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('feedback') }}" data-tooltip="Wir freuen uns über alles!">Feedback ❤️</a></li>
                     <li><a href="{{ url_for('lehrveranstaltungen') }}" data-tooltip="Zeige alle Lehrveranstaltungen an">Lehrveranstaltungen</a></li>

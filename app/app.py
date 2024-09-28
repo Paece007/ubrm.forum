@@ -10,7 +10,6 @@ import urllib.parse
 from urllib.parse import unquote
 from io import BytesIO
 import os
-import time
 import sys
 import base64
 

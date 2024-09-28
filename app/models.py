@@ -7,9 +7,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, HiddenField, TextAreaField
 from flask_wtf.file import FileField, FileRequired
 from wtforms.validators import InputRequired, Length, ValidationError, DataRequired
-from flask_bcrypt import Bcrypt
-from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
 
 from app import db
 
